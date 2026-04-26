@@ -1,6 +1,19 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import api from "../api/axios";
 import type { Plan, SubscriptionStatus } from "../types";
+
+interface CreateOrderResponse {
+  order_id: string;
+  amount: number;
+  currency: string;
+  razorpay_key_id: string;
+}
+
+interface VerifyPaymentRequest {
+  razorpay_order_id: string;
+  razorpay_payment_id: string;
+  razorpay_signature: string;
+}
 
 export function useSubscription() {
   return useQuery<SubscriptionStatus>({
@@ -21,6 +34,24 @@ export function usePlan(id: string | undefined) {
     queryKey: ["plan", id],
     queryFn: () => api.get(`/plans/${id}`).then((r) => r.data),
     enabled: !!id,
+  });
+}
+
+export function useCreateOrder() {
+  return useMutation({
+    mutationFn: (planId: string) =>
+      api.post<CreateOrderResponse>("/payments/create-order", { plan_id: planId }).then((r) => r.data),
+  });
+}
+
+export function useVerifyPayment() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: VerifyPaymentRequest) =>
+      api.post("/payments/verify", data).then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["subscription"] });
+    },
   });
 }
 

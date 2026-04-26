@@ -52,10 +52,10 @@ export function LessonPlayerPage() {
     error: notesError,
   } = useChapterNotes(notesRequested ? chapterId : undefined);
 
-  const axiosError = error as AxiosError<{ error_code?: string }> | null;
+  const axiosError = error as AxiosError<{ detail?: { detail?: string } }> | null;
   const isSubscriptionRequired =
     axiosError?.response?.status === 403 &&
-    axiosError?.response?.data?.error_code === "subscription_required";
+    axiosError?.response?.data?.detail?.detail === "subscription_required";
 
   return (
     <div>
