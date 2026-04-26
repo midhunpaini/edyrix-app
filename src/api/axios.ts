@@ -17,9 +17,28 @@ let refreshing = false;
 let refreshQueue: Array<(token: string) => void> = [];
 
 api.interceptors.response.use(
-  (res) => res,
+  (res) => {
+    // Unwrap CommonResponse envelope: { success, message, data } → data
+    if (
+      res.data &&
+      typeof res.data === "object" &&
+      "success" in res.data &&
+      "data" in res.data
+    ) {
+      res.data = res.data.data;
+    }
+    return res;
+  },
   async (error) => {
     const original = error.config;
+    const requestUrl = original?.url ?? "";
+
+    if (error.response?.status === 401 && requestUrl.includes("/auth/refresh")) {
+      useAuthStore.getState().clearAuth();
+      window.location.href = "/login";
+      return Promise.reject(error);
+    }
+
     if (error.response?.status !== 401 || original._retry) {
       return Promise.reject(error);
     }
@@ -38,6 +57,7 @@ api.interceptors.response.use(
 
     try {
       const res = await api.post<{ access_token: string }>("/auth/refresh");
+      // After the response interceptor runs, res.data is already unwrapped to { access_token }
       const newToken = res.data.access_token;
       useAuthStore.getState().setUser(useAuthStore.getState().user!, newToken);
       refreshQueue.forEach((cb) => cb(newToken));

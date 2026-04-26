@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import api from "../api/axios";
-import type { TestDetail, TestResult, TestSummary } from "../types";
+import type { AvailableTest, TestDetail, TestResult, TestSummary } from "../types";
 
 interface TestHistoryItem {
   attempt_id: string;
@@ -20,11 +20,28 @@ export function useChapterTest(chapterId: string | undefined) {
   });
 }
 
+export function useLessonTest(lessonId: string | undefined) {
+  return useQuery<TestSummary>({
+    queryKey: ["test", "lesson", lessonId],
+    queryFn: () => api.get(`/tests/lesson/${lessonId}`).then((r) => r.data),
+    enabled: !!lessonId,
+    retry: false,
+  });
+}
+
+export function useAvailableTests() {
+  return useQuery<AvailableTest[]>({
+    queryKey: ["test", "available"],
+    queryFn: () => api.get("/tests/available").then((r) => r.data),
+  });
+}
+
 export function useTest(id: string | undefined) {
   return useQuery<TestDetail>({
     queryKey: ["test", id],
     queryFn: () => api.get(`/tests/${id}`).then((r) => r.data),
     enabled: !!id,
+    retry: false,
   });
 }
 

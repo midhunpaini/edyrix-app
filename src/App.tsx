@@ -12,8 +12,13 @@ import { OnboardingPage } from "./pages/OnboardingPage";
 import { PricingPage } from "./pages/PricingPage";
 import { ProfilePage } from "./pages/ProfilePage";
 import { SubjectListPage } from "./pages/SubjectListPage";
-import { TestPage } from "./pages/TestPage";
-import { TestResultsPage } from "./pages/TestResultsPage";
+import { AnswerReviewPage } from "./pages/test/AnswerReviewPage";
+import { LiveTestPage } from "./pages/test/LiveTestPage";
+import { PracticeTestPage } from "./pages/test/PracticeTestPage";
+import { PreTestPage } from "./pages/test/PreTestPage";
+import { SubmitConfirmPage } from "./pages/test/SubmitConfirmPage";
+import { TestResultsPage } from "./pages/test/TestResultsPage";
+import { TestsListPage } from "./pages/test/TestsListPage";
 import { useAuthStore } from "./store/authStore";
 
 const qc = new QueryClient({
@@ -45,6 +50,8 @@ export default function App() {
             </AuthGuard>
           }
         />
+
+        {/* App shell — pages with bottom nav */}
         <Route
           path="/app"
           element={
@@ -59,13 +66,62 @@ export default function App() {
           <Route path="subjects/:id" element={<ChapterListPage />} />
           <Route path="chapters/:id" element={<LessonListPage />} />
           <Route path="lessons/:id" element={<LessonPlayerPage />} />
-          <Route path="tests" element={<TestResultsPage />} />
-          <Route path="tests/:id" element={<TestPage />} />
-          <Route path="tests/:id/results" element={<TestResultsPage />} />
+          <Route path="tests" element={<TestsListPage />} />
           <Route path="pricing" element={<PricingPage />} />
           <Route path="profile" element={<ProfilePage />} />
           <Route path="doubts" element={<DoubtsPage />} />
         </Route>
+
+        {/* Full-screen test flow — no bottom nav */}
+        <Route
+          path="/app/tests/:id"
+          element={
+            <AuthGuard>
+              <PreTestPage />
+            </AuthGuard>
+          }
+        />
+        <Route
+          path="/app/tests/:id/live"
+          element={
+            <AuthGuard>
+              <LiveTestPage />
+            </AuthGuard>
+          }
+        />
+        <Route
+          path="/app/tests/:id/submit"
+          element={
+            <AuthGuard>
+              <SubmitConfirmPage />
+            </AuthGuard>
+          }
+        />
+        <Route
+          path="/app/tests/:id/results"
+          element={
+            <AuthGuard>
+              <TestResultsPage />
+            </AuthGuard>
+          }
+        />
+        <Route
+          path="/app/tests/:id/review"
+          element={
+            <AuthGuard>
+              <AnswerReviewPage />
+            </AuthGuard>
+          }
+        />
+        <Route
+          path="/app/chapters/:id/practice"
+          element={
+            <AuthGuard>
+              <PracticeTestPage />
+            </AuthGuard>
+          }
+        />
+
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       <Toaster position="top-center" richColors />

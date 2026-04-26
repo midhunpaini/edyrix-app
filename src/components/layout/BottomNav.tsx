@@ -1,13 +1,14 @@
 import { NavLink, useLocation } from "react-router-dom";
-import { BookOpen, Home, MessageCircle, PenLine, User } from "lucide-react";
 import { clsx } from "clsx";
+import { Icon } from "../ui/Icon";
+import { Icons } from "../../lib/icons";
 
 const TABS = [
-  { to: "/app/dashboard", icon: Home, label: "Home" },
-  { to: "/app/subjects", icon: BookOpen, label: "Subjects" },
-  { to: "/app/tests", icon: PenLine, label: "Tests" },
-  { to: "/app/doubts", icon: MessageCircle, label: "Doubts" },
-  { to: "/app/profile", icon: User, label: "Profile" },
+  { to: "/app/dashboard", icon: Icons.home, iconActive: Icons.homeActive, label: "Home" },
+  { to: "/app/subjects", icon: Icons.subjects, iconActive: Icons.subjectsActive, label: "Subjects" },
+  { to: "/app/tests", icon: Icons.tests, iconActive: Icons.testsActive, label: "Tests" },
+  { to: "/app/doubts", icon: Icons.doubts, iconActive: Icons.doubtsActive, label: "Doubts" },
+  { to: "/app/profile", icon: Icons.profile, iconActive: Icons.profileActive, label: "Profile" },
 ];
 
 export function BottomNav() {
@@ -19,18 +20,21 @@ export function BottomNav() {
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
       <div className="flex items-center">
-        {TABS.map(({ to, icon: Icon, label }) => {
+        {TABS.map(({ to, icon, iconActive, label }) => {
           const active = pathname.startsWith(to);
           return (
             <NavLink
               key={to}
               to={to}
               className="flex-1 flex flex-col items-center gap-0.5 py-2 relative"
+              aria-label={label}
             >
               <Icon
+                name={active ? iconActive : icon}
                 size={22}
+                filled={active}
                 className={clsx("transition-colors", active ? "text-teal" : "text-ink-3")}
-                strokeWidth={active ? 2.2 : 1.8}
+                aria-hidden
               />
               <span
                 className={clsx(

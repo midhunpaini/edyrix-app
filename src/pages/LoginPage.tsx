@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import type { ConfirmationResult } from "firebase/auth";
 import { auth, RecaptchaVerifier, signInWithPhoneNumber } from "../lib/firebase";
-import { useGoogleLogin, usePhoneVerifyOTP } from "../hooks/useAuth";
+import { useDevLogin, useGoogleLogin, usePhoneVerifyOTP } from "../hooks/useAuth";
 import { Button } from "../components/ui/Button";
 import { ArrowLeft, Phone } from "lucide-react";
 import type { User } from "../types";
@@ -65,8 +65,10 @@ export function LoginPage() {
   const [sending, setSending] = useState(false);
   const recaptchaRef = useRef<RecaptchaVerifier | null>(null);
 
+  const [devEmail, setDevEmail] = useState("");
   const googleLogin = useGoogleLogin();
   const phoneVerify = usePhoneVerifyOTP();
+  const devLogin = useDevLogin();
 
   const afterLogin = (user: User) => {
     if (user.current_class === null) {
@@ -240,6 +242,37 @@ export function LoginPage() {
           By signing in you agree to our Terms of Service and Privacy Policy.
         </p>
       </div>
+
+      {import.meta.env.DEV && (
+        <div className="max-w-[430px] w-full mx-auto px-4 pb-8 mt-4">
+          <div className="border border-dashed border-amber/60 rounded-2xl p-4 bg-amber/5">
+            <p className="text-xs font-body font-semibold text-amber mb-3 uppercase tracking-wide">
+              Dev login (not in production)
+            </p>
+            <div className="flex gap-2">
+              <input
+                type="email"
+                placeholder="user@email.com"
+                value={devEmail}
+                onChange={(e) => setDevEmail(e.target.value)}
+                className="flex-1 h-10 bg-white rounded-xl border border-ink/10 px-3 font-body text-sm text-ink focus:border-teal focus:outline-none transition-colors"
+              />
+              <Button
+                size="sm"
+                loading={devLogin.isPending}
+                onClick={() => {
+                  devLogin.mutate(devEmail, {
+                    onSuccess: (data) => afterLogin(data.user),
+                    onError: () => toast.error("Dev login failed — check email and backend"),
+                  });
+                }}
+              >
+                Go
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div id="recaptcha-container" />
     </div>

@@ -38,7 +38,7 @@ export function useChapterProgress(chapterId: string | undefined) {
 export function useWatchProgress() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (vars: { lesson_id: string; percentage: number }) =>
+    mutationFn: (vars: { lesson_id: string; percentage: number; current_time_seconds: number }) =>
       api.post<{ is_completed: boolean }>("/progress/watch", vars).then((r) => r.data),
     onSuccess: (_, vars) => {
       qc.invalidateQueries({ queryKey: ["progress"] });

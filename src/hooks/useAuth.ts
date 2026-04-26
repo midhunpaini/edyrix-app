@@ -68,6 +68,16 @@ export function usePhoneVerifyOTP() {
   });
 }
 
+export function useDevLogin() {
+  return useMutation<LoginResponse, Error, string>({
+    mutationFn: (email) =>
+      api.post<LoginResponse>("/auth/dev-login", { email }).then((r) => r.data),
+    onSuccess: (data) => {
+      useAuthStore.getState().setUser(data.user, data.access_token);
+    },
+  });
+}
+
 export function useUpdateMe() {
   const qc = useQueryClient();
   return useMutation<User, Error, UpdateMeInput>({

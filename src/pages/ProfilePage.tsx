@@ -1,10 +1,11 @@
 import { useNavigate } from "react-router-dom";
-import { BookOpen, LogOut, Target, Trophy, Zap } from "lucide-react";
 import { useMe, useMeStats } from "../hooks/useAuth";
 import { useSubscription } from "../hooks/useSubscription";
 import { useAuthStore } from "../store/authStore";
 import { Button } from "../components/ui/Button";
 import { Skeleton } from "../components/ui/Skeleton";
+import { Icon } from "../components/ui/Icon";
+import { Icons } from "../lib/icons";
 import api from "../api/axios";
 
 export function ProfilePage() {
@@ -88,28 +89,28 @@ export function ProfilePage() {
           ) : (
             <>
               <div className="bg-white rounded-2xl p-4 border border-ink/5 shadow-sm">
-                <BookOpen size={20} className="text-teal mb-2" />
+                <Icon name={Icons.videoLesson} size={20} className="text-teal mb-2 block" aria-hidden />
                 <p className="font-display font-bold text-xl text-ink">
                   {stats?.videos_completed ?? 0}
                 </p>
                 <p className="font-body text-xs text-ink-3">Videos done</p>
               </div>
               <div className="bg-white rounded-2xl p-4 border border-ink/5 shadow-sm">
-                <Target size={20} className="text-amber mb-2" />
+                <Icon name={Icons.quiz} size={20} className="text-amber mb-2 block" aria-hidden />
                 <p className="font-display font-bold text-xl text-ink">
                   {stats?.tests_taken ?? 0}
                 </p>
                 <p className="font-body text-xs text-ink-3">Tests taken</p>
               </div>
               <div className="bg-white rounded-2xl p-4 border border-ink/5 shadow-sm">
-                <Trophy size={20} className="text-amber mb-2" />
+                <Icon name={Icons.trophy} size={20} className="text-amber mb-2 block" aria-hidden />
                 <p className="font-display font-bold text-xl text-ink">
                   {stats?.avg_test_score ?? 0}%
                 </p>
                 <p className="font-body text-xs text-ink-3">Avg score</p>
               </div>
               <div className="bg-white rounded-2xl p-4 border border-ink/5 shadow-sm">
-                <Zap size={20} className="text-teal mb-2" />
+                <Icon name={Icons.streak} size={20} className="text-teal mb-2 block" aria-hidden />
                 <p className="font-display font-bold text-xl text-ink">
                   {stats?.streak_days ?? 0}
                 </p>
@@ -173,7 +174,7 @@ export function ProfilePage() {
       {/* Logout */}
       <div className="px-4 mt-6">
         <Button variant="secondary" fullWidth onClick={handleLogout}>
-          <LogOut size={16} className="mr-2" />
+          <Icon name={Icons.logout} size={16} className="mr-2" aria-hidden />
           Log Out
         </Button>
       </div>

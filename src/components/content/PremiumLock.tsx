@@ -1,8 +1,9 @@
 import { differenceInDays } from "date-fns";
-import { Lock } from "lucide-react";
 import { useHasAccess, useSubscription } from "../../hooks/useSubscription";
 import { useUIStore } from "../../store/uiStore";
 import { Button } from "../ui/Button";
+import { Icon } from "../ui/Icon";
+import { Icons } from "../../lib/icons";
 
 interface PremiumLockProps {
   subjectId: string;
@@ -40,7 +41,7 @@ export function PremiumLock({ subjectId, classNumber, children }: PremiumLockPro
       <div className="absolute inset-0 flex flex-col items-center justify-center bg-ink/50 rounded-2xl">
         <div className="bg-white rounded-2xl px-5 py-4 mx-4 text-center shadow-xl max-w-[200px]">
           <div className="w-10 h-10 bg-teal/10 rounded-full flex items-center justify-center mx-auto mb-2">
-            <Lock size={20} className="text-teal" />
+            <Icon name={Icons.lock} size={20} className="text-teal" aria-hidden />
           </div>
           <p className="font-body font-semibold text-ink text-sm mb-1">Premium</p>
           <p className="font-body text-xs text-ink-3 mb-3">Subscribe to unlock</p>

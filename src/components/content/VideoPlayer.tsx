@@ -27,6 +27,11 @@ export function VideoPlayer({ lessonId, youtubeVideoId, resumeAtSeconds = 0 }: V
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const completedRef = useRef(false);
   const watchProgress = useWatchProgress();
+  const mutateWatchProgressRef = useRef(watchProgress.mutate);
+
+  useEffect(() => {
+    mutateWatchProgressRef.current = watchProgress.mutate;
+  }, [watchProgress.mutate]);
 
   const stopHeartbeat = useCallback(() => {
     if (intervalRef.current) {
@@ -35,31 +40,45 @@ export function VideoPlayer({ lessonId, youtubeVideoId, resumeAtSeconds = 0 }: V
     }
   }, []);
 
+  const sendHeartbeat = useCallback(() => {
+    const player = playerRef.current;
+    if (!player) return;
+
+    const currentTimeSeconds = Math.max(0, Math.floor(player.getCurrentTime()));
+    const duration = player.getDuration();
+    const percentage =
+      duration > 0 ? Math.min(100, Math.round((currentTimeSeconds / duration) * 100)) : 0;
+
+    mutateWatchProgressRef.current({
+      lesson_id: lessonId,
+      percentage,
+      current_time_seconds: currentTimeSeconds,
+    });
+
+    if (percentage >= 90 && !completedRef.current) {
+      completedRef.current = true;
+      stopHeartbeat();
+      toast.success("Lesson complete!");
+    }
+  }, [lessonId, stopHeartbeat]);
+
   const startHeartbeat = useCallback(() => {
     stopHeartbeat();
     intervalRef.current = setInterval(() => {
-      const player = playerRef.current;
-      if (!player || completedRef.current) return;
-
-      const duration = player.getDuration();
-      if (duration <= 0) return;
-
-      const current = player.getCurrentTime();
-      const percentage = Math.min(100, Math.round((current / duration) * 100));
-
-      watchProgress.mutate({ lesson_id: lessonId, percentage });
-
-      if (percentage >= 90) {
-        completedRef.current = true;
-        stopHeartbeat();
-        toast.success("Lesson complete!");
-      }
+      sendHeartbeat();
     }, 5000);
-  }, [lessonId, watchProgress, stopHeartbeat]);
+  }, [sendHeartbeat, stopHeartbeat]);
 
   useEffect(() => {
-    return () => stopHeartbeat();
-  }, [stopHeartbeat]);
+    completedRef.current = false;
+  }, [lessonId, youtubeVideoId]);
+
+  useEffect(() => {
+    return () => {
+      sendHeartbeat();
+      stopHeartbeat();
+    };
+  }, [sendHeartbeat, stopHeartbeat]);
 
   const handleReady = (e: YTEvent) => {
     playerRef.current = e.target;
@@ -72,6 +91,7 @@ export function VideoPlayer({ lessonId, youtubeVideoId, resumeAtSeconds = 0 }: V
     if (e.data === PLAYER_STATE_PLAYING) {
       startHeartbeat();
     } else {
+      sendHeartbeat();
       stopHeartbeat();
     }
   };
@@ -81,14 +101,17 @@ export function VideoPlayer({ lessonId, youtubeVideoId, resumeAtSeconds = 0 }: V
     height: "100%",
     playerVars: {
       controls: 1 as const,
+      enablejsapi: 1 as const,
+      playsinline: 1 as const,
       rel: 0 as const,
       modestbranding: 1 as const,
       iv_load_policy: 3 as const,
+      origin: window.location.origin,
     },
   };
 
   return (
-    <div className="w-full aspect-video bg-black">
+    <div className="w-full aspect-video bg-black overflow-hidden">
       <YouTube
         videoId={youtubeVideoId}
         opts={opts}

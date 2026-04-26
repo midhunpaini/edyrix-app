@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
-import { ArrowLeft, Download, FileText, List, Lock } from "lucide-react";
 import type { AxiosError } from "axios";
+import { toast } from "sonner";
 import { useLessonPlay, useChapter, useChapterNotes } from "../hooks/useContent";
 import { VideoPlayer } from "../components/content/VideoPlayer";
 import { Button } from "../components/ui/Button";
 import { Skeleton } from "../components/ui/Skeleton";
+import { Icon } from "../components/ui/Icon";
+import { Icons } from "../lib/icons";
 import { useUIStore } from "../store/uiStore";
 
 interface LocationState {
@@ -15,20 +17,34 @@ interface LocationState {
 
 type Tab = "lessons" | "notes";
 
-function SubscriptionRequired({ subjectSlug }: { subjectSlug?: string }) {
+function SubscriptionRequired({
+  subjectId,
+  chapterTitle,
+  onBackToLessons,
+}: {
+  subjectId?: string;
+  chapterTitle?: string;
+  onBackToLessons: () => void;
+}) {
   const openPricing = useUIStore((s) => s.openPricing);
   return (
     <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
       <div className="w-16 h-16 bg-teal/10 rounded-full flex items-center justify-center mb-4">
-        <Lock size={28} className="text-teal" />
+        <Icon name={Icons.lock} size={28} className="text-teal" aria-hidden />
       </div>
       <h2 className="font-display font-bold text-xl text-ink mb-2">Premium Lesson</h2>
       <p className="font-body text-ink-3 text-sm mb-6 max-w-[260px]">
-        Subscribe to unlock all lessons, PDF notes, and practice tests.
+        Subscribe to unlock this lesson{chapterTitle ? ` in ${chapterTitle}` : ""}, PDF notes,
+        tests, and doubt support.
       </p>
-      <Button size="lg" onClick={() => openPricing(subjectSlug)}>
-        View Plans
-      </Button>
+      <div className="w-full max-w-[260px] space-y-2">
+        <Button size="lg" fullWidth onClick={() => openPricing(subjectId)}>
+          View Plans
+        </Button>
+        <Button variant="secondary" fullWidth onClick={onBackToLessons}>
+          Back to Lessons
+        </Button>
+      </div>
     </div>
   );
 }
@@ -56,6 +72,21 @@ export function LessonPlayerPage() {
   const isSubscriptionRequired =
     axiosError?.response?.status === 403 &&
     axiosError?.response?.data?.detail?.detail === "subscription_required";
+  const openPricing = useUIStore((s) => s.openPricing);
+
+  function handleSidebarLessonClick(lessonId: string, isLocked: boolean) {
+    if (lessonId === id) return;
+
+    if (isLocked) {
+      toast.info("Subscribe to unlock this lesson");
+      openPricing(chapter?.subject_id);
+      return;
+    }
+
+    navigate(`/app/lessons/${lessonId}`, {
+      state: { chapterId, chapterTitle },
+    });
+  }
 
   return (
     <div>
@@ -65,7 +96,7 @@ export function LessonPlayerPage() {
           onClick={() => navigate(-1)}
           className="p-1.5 rounded-xl hover:bg-bg transition-colors"
         >
-          <ArrowLeft size={20} className="text-ink" />
+          <Icon name={Icons.back} size={20} className="text-ink" aria-hidden />
         </button>
         <div className="flex-1 min-w-0">
           {isLoading ? (
@@ -82,7 +113,13 @@ export function LessonPlayerPage() {
       {isLoading ? (
         <Skeleton className="w-full aspect-video rounded-none" />
       ) : isSubscriptionRequired ? (
-        <SubscriptionRequired />
+        <SubscriptionRequired
+          subjectId={chapter?.subject_id}
+          chapterTitle={chapterTitle ?? chapter?.title}
+          onBackToLessons={() =>
+            chapterId ? navigate(`/app/chapters/${chapterId}`) : navigate(-1)
+          }
+        />
       ) : lesson ? (
         <VideoPlayer
           lessonId={id!}
@@ -107,12 +144,12 @@ export function LessonPlayerPage() {
               >
                 {t === "lessons" ? (
                   <>
-                    <List size={15} />
+                    <Icon name={Icons.lesson} size={15} aria-hidden />
                     Lessons
                   </>
                 ) : (
                   <>
-                    <FileText size={15} />
+                    <Icon name={Icons.note} size={15} aria-hidden />
                     Notes
                   </>
                 )}
@@ -127,12 +164,7 @@ export function LessonPlayerPage() {
                 {(chapter?.lessons ?? []).map((lessonItem) => (
                   <button
                     key={lessonItem.id}
-                    onClick={() =>
-                      lessonItem.id !== id &&
-                      navigate(`/app/lessons/${lessonItem.id}`, {
-                        state: { chapterId, chapterTitle },
-                      })
-                    }
+                    onClick={() => handleSidebarLessonClick(lessonItem.id, lessonItem.is_locked)}
                     className={`w-full flex items-center gap-3 p-3 rounded-xl text-left transition-colors ${
                       lessonItem.id === id
                         ? "bg-teal/10"
@@ -147,7 +179,7 @@ export function LessonPlayerPage() {
                       }`}
                     >
                       {lessonItem.watch_percentage >= 90 ? (
-                        <span className="text-forest text-xs font-bold">✓</span>
+                        <Icon name={Icons.check} size={14} className="text-forest" aria-hidden />
                       ) : (
                         <span className="text-xs font-display font-bold">
                           {(chapter?.lessons ?? []).indexOf(lessonItem) + 1}
@@ -163,8 +195,8 @@ export function LessonPlayerPage() {
                         {lessonItem.title}
                       </p>
                     </div>
-                    {!lessonItem.is_free && lessonItem.id !== id && (
-                      <Lock size={12} className="text-ink-3 flex-shrink-0" />
+                    {lessonItem.is_locked && lessonItem.id !== id && (
+                      <Icon name={Icons.lock} size={12} className="text-ink-3 flex-shrink-0" aria-hidden />
                     )}
                   </button>
                 ))}
@@ -178,7 +210,7 @@ export function LessonPlayerPage() {
               <div className="py-2">
                 {!notesRequested ? (
                   <div className="text-center py-6">
-                    <FileText size={36} className="text-ink/20 mx-auto mb-3" />
+                    <Icon name={Icons.note} size={36} className="text-ink/20 mx-auto mb-3 block" aria-hidden />
                     <p className="font-body font-semibold text-ink-3 mb-4 text-sm">
                       Chapter PDF notes available
                     </p>
@@ -199,7 +231,7 @@ export function LessonPlayerPage() {
                   </div>
                 ) : notesError ? (
                   <div className="text-center py-6">
-                    <Lock size={32} className="text-ink/20 mx-auto mb-3" />
+                    <Icon name={Icons.lock} size={32} className="text-ink/20 mx-auto mb-3 block" aria-hidden />
                     <p className="font-body text-ink-3 text-sm">Notes are premium content</p>
                   </div>
                 ) : notes ? (
@@ -219,7 +251,7 @@ export function LessonPlayerPage() {
                       className="w-full"
                     >
                       <Button fullWidth variant="secondary">
-                        <Download size={15} className="mr-2" />
+                        <Icon name={Icons.download} size={15} className="mr-2" aria-hidden />
                         Download PDF
                       </Button>
                     </a>

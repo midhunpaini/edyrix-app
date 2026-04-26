@@ -4,6 +4,9 @@ export default {
   content: ["./index.html", "./src/**/*.{ts,tsx}"],
   theme: {
     extend: {
+      spacing: {
+        '13': '3.25rem',
+      },
       colors: {
         teal: { DEFAULT: "#0D6E6E", dark: "#094F4F", light: "#14918A" },
         amber: { DEFAULT: "#F5A623", dark: "#D4891A", pale: "#FEF3DC" },

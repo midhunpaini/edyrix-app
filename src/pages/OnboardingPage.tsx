@@ -92,7 +92,7 @@ export function OnboardingPage() {
         {/* Step dots */}
         <StepDots current={step} total={3} />
 
-        <div className="flex-1 mt-6">
+        <div className="flex-1 mt-6 min-h-0 overflow-y-auto">
           {/* Step 0: Class selector */}
           {step === 0 && (
             <div className="grid grid-cols-2 gap-3">

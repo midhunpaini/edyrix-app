@@ -4,7 +4,7 @@ export interface User {
   phone: string | null;
   email: string | null;
   avatar_url: string | null;
-  role: "student" | "admin";
+  role: "student";
   current_class: number | null;
   medium: "english" | "malayalam";
   free_trial_expires_at: string | null;
@@ -37,6 +37,7 @@ export interface ChapterSummary {
 
 export interface Chapter {
   id: string;
+  subject_id: string;
   title: string;
   lessons: LessonSummary[];
   has_notes: boolean;
@@ -48,9 +49,22 @@ export interface LessonSummary {
   title: string;
   duration_seconds: number | null;
   is_free: boolean;
+  is_locked: boolean;
   thumbnail_url: string | null;
   watch_percentage: number;
   is_completed: boolean;
+  test: LessonTestSummary | null;
+}
+
+export interface LessonTestSummary {
+  id: string;
+  title: string;
+  duration_minutes: number;
+  total_marks: number;
+  question_count: number;
+  is_unlocked: boolean;
+  unlock_reason: "complete_lesson" | "subscription_required" | null;
+  last_attempt: LastAttempt | null;
 }
 
 export interface LessonPlay {
@@ -102,19 +116,56 @@ export interface TestQuestion {
 export interface TestSummary {
   id: string;
   title: string;
+  subject_id: string | null;
+  subject_name: string | null;
+  chapter_id: string;
+  chapter_number: number | null;
+  chapter_title: string | null;
+  lesson_id: string | null;
+  lesson_title: string | null;
   duration_minutes: number;
   total_marks: number;
   question_count: number;
-  last_attempt: {
-    score: number;
-    percentage: number;
-    completed_at: string;
-  } | null;
+  is_unlocked: boolean;
+  unlock_reason: "complete_lesson" | "subscription_required" | null;
+  last_attempt: LastAttempt | null;
+}
+
+export interface LastAttempt {
+  score: number;
+  total_marks: number | null;
+  percentage: number;
+  completed_at: string;
+}
+
+export interface AvailableTest {
+  id: string;
+  title: string;
+  subject_id: string;
+  subject_name: string;
+  chapter_id: string;
+  chapter_number: number;
+  chapter_title: string;
+  lesson_id: string;
+  lesson_title: string;
+  duration_minutes: number;
+  total_marks: number;
+  question_count: number;
+  is_unlocked: boolean;
+  unlock_reason: "complete_lesson" | "subscription_required" | null;
+  last_attempt: LastAttempt | null;
 }
 
 export interface TestDetail {
   id: string;
   title: string;
+  subject_id: string;
+  subject_name: string;
+  chapter_id: string;
+  chapter_number: number;
+  chapter_title: string;
+  lesson_id: string;
+  lesson_title: string;
   duration_minutes: number;
   total_marks: number;
   questions: TestQuestion[];

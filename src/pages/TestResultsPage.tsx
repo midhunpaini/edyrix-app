@@ -1,13 +1,31 @@
+import { useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, CheckCircle, XCircle } from "lucide-react";
-import { useTest, useTestHistory } from "../hooks/useTests";
+import {
+  AlertTriangle,
+  ArrowLeft,
+  BookOpen,
+  CheckCircle,
+  Clock,
+  Lock,
+  PenLine,
+  RotateCcw,
+  XCircle,
+} from "lucide-react";
+import { toast } from "sonner";
+import { useAvailableTests, useTest, useTestHistory } from "../hooks/useTests";
 import { Button } from "../components/ui/Button";
 import { Skeleton } from "../components/ui/Skeleton";
-import type { TestResult } from "../types";
+import type { AvailableTest, TestResult } from "../types";
+import { useUIStore } from "../store/uiStore";
+
+const OPTION_LABELS = ["A", "B", "C", "D"];
 
 interface ResultState {
   result: TestResult;
   testTitle?: string;
+  lessonId?: string;
+  chapterId?: string;
+  chapterTitle?: string;
 }
 
 function ScoreCircle({ percentage }: { percentage: number }) {
@@ -50,6 +68,7 @@ function ScoreCircle({ percentage }: { percentage: number }) {
       >
         {passed ? "Well done!" : "Keep practising"}
       </p>
+      <p className="font-body text-xs text-ink-3 mt-1">Review your answers and explanations below</p>
     </div>
   );
 }
@@ -59,19 +78,115 @@ export function TestResultsPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const state = location.state as ResultState | null;
-  const { data: test } = useTest(id);
+  const [tab, setTab] = useState<"available" | "history">("available");
+  const { data: test, isLoading: testLoading } = useTest(id);
   const { data: history, isLoading: historyLoading } = useTestHistory();
+  const { data: availableTests, isLoading: availableLoading } = useAvailableTests();
+  const openPricing = useUIStore((s) => s.openPricing);
 
-  // /app/tests (no id) — show test history list
+  function handleAvailableTestClick(item: AvailableTest) {
+    if (item.is_unlocked) {
+      navigate(`/app/tests/${item.id}`);
+      return;
+    }
+
+    if (item.unlock_reason === "subscription_required") {
+      toast.info("Subscribe to unlock this lesson test");
+      openPricing(item.subject_id);
+      return;
+    }
+
+    toast.info("Complete the lesson to unlock its test");
+    navigate(`/app/lessons/${item.lesson_id}`, {
+      state: { chapterId: item.chapter_id, chapterTitle: item.chapter_title },
+    });
+  }
+
   if (!id) {
     return (
       <div className="min-h-screen bg-bg pb-24">
         <div className="px-4 pt-12 pb-4 bg-white border-b border-ink/5">
-          <h1 className="font-display font-bold text-xl text-ink">My Tests</h1>
-          <p className="font-body text-xs text-ink-3 mt-0.5">All past attempts</p>
+          <h1 className="font-display font-bold text-xl text-ink">Tests</h1>
+          <p className="font-body text-xs text-ink-3 mt-0.5">Practice after each lesson</p>
+          <div className="flex gap-1 bg-ink/5 rounded-xl p-1 mt-4">
+            {(["available", "history"] as const).map((value) => (
+              <button
+                key={value}
+                type="button"
+                onClick={() => setTab(value)}
+                className={`flex-1 h-9 rounded-lg font-body text-xs font-semibold transition-colors ${
+                  tab === value ? "bg-white text-teal shadow-sm" : "text-ink-3"
+                }`}
+              >
+                {value === "available" ? "Available" : "History"}
+              </button>
+            ))}
+          </div>
         </div>
         <div className="px-4 py-4 space-y-3">
-          {historyLoading ? (
+          {tab === "available" ? (
+            availableLoading ? (
+              Array.from({ length: 5 }).map((_, i) => (
+                <Skeleton key={i} className="h-24 w-full rounded-2xl" />
+              ))
+            ) : !availableTests?.length ? (
+              <div className="text-center py-16">
+                <PenLine size={34} className="mx-auto text-ink/20 mb-3" />
+                <p className="font-body text-ink-3 text-sm">No tests available yet.</p>
+                <p className="font-body text-ink-3 text-xs mt-1">
+                  Open a subject and complete a lesson to unlock tests.
+                </p>
+              </div>
+            ) : (
+              availableTests.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => handleAvailableTestClick(item)}
+                  className="w-full bg-white rounded-2xl border border-ink/5 p-4 text-left shadow-sm active:scale-[0.98] transition-transform"
+                >
+                  <div className="flex items-start gap-3">
+                    <div
+                      className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                        item.is_unlocked ? "bg-amber/10 text-amber" : "bg-ink/5 text-ink-3"
+                      }`}
+                    >
+                      {item.is_unlocked ? <PenLine size={18} /> : <Lock size={16} />}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-body font-semibold text-ink text-sm truncate">
+                        {item.title}
+                      </p>
+                      <p className="font-body text-xs text-ink-3 mt-0.5 truncate">
+                        {item.subject_name} - Ch {item.chapter_number}: {item.lesson_title}
+                      </p>
+                      <div className="flex items-center gap-2 mt-2 flex-wrap">
+                        <span className="flex items-center gap-1 text-[11px] text-ink-3 font-body">
+                          <Clock size={11} />
+                          {item.duration_minutes} min
+                        </span>
+                        <span className="text-[11px] text-ink-3 font-body">
+                          {item.question_count} questions
+                        </span>
+                        {item.last_attempt && (
+                          <span className="text-[11px] text-teal font-body font-semibold">
+                            Last {Math.round(item.last_attempt.percentage)}%
+                          </span>
+                        )}
+                      </div>
+                      {!item.is_unlocked && (
+                        <p className="font-body text-[11px] text-amber mt-2">
+                          {item.unlock_reason === "subscription_required"
+                            ? "Subscribe to access this lesson test"
+                            : "Complete this lesson to unlock"}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </button>
+              ))
+            )
+          ) : historyLoading ? (
             Array.from({ length: 4 }).map((_, i) => (
               <Skeleton key={i} className="h-20 w-full rounded-2xl" />
             ))
@@ -79,7 +194,7 @@ export function TestResultsPage() {
             <div className="text-center py-16">
               <p className="font-body text-ink-3 text-sm">No tests taken yet.</p>
               <p className="font-body text-ink-3 text-xs mt-1">
-                Complete a chapter to unlock its test.
+                Complete a lesson to unlock its test.
               </p>
             </div>
           ) : (
@@ -117,9 +232,21 @@ export function TestResultsPage() {
     );
   }
 
-  // /app/tests/:id/results — show specific result
   const result = state?.result;
   const testTitle = state?.testTitle ?? test?.title ?? "Test";
+  const lessonId = state?.lessonId ?? test?.lesson_id;
+  const chapterId = state?.chapterId ?? test?.chapter_id;
+  const chapterTitle = state?.chapterTitle ?? test?.chapter_title;
+
+  function goBackToLesson() {
+    if (lessonId) {
+      navigate(`/app/lessons/${lessonId}`, {
+        state: { chapterId, chapterTitle },
+      });
+      return;
+    }
+    navigate("/app/subjects");
+  }
 
   if (!result) {
     return (
@@ -133,11 +260,11 @@ export function TestResultsPage() {
   const percentage = Math.round(result.percentage);
 
   return (
-    <div className="min-h-screen bg-bg pb-24">
-      {/* Header */}
+    <div className="min-h-screen bg-bg pb-28">
       <div className="flex items-center gap-3 px-4 pt-12 pb-3 bg-white border-b border-ink/5">
         <button
-          onClick={() => navigate("/app/subjects")}
+          type="button"
+          onClick={() => navigate("/app/tests")}
           className="p-1.5 rounded-xl hover:bg-bg transition-colors"
         >
           <ArrowLeft size={20} className="text-ink" />
@@ -152,80 +279,101 @@ export function TestResultsPage() {
 
       <ScoreCircle percentage={percentage} />
 
-      {/* Answer review */}
       <div className="px-4 py-4 space-y-4">
         <h2 className="font-display font-bold text-sm text-ink">Answer Review</h2>
-        {result.results.map((item, index) => {
-          const question = test?.questions.find((q) => q.id === item.question_id);
-          return (
-            <div
-              key={item.question_id}
-              className={`bg-white rounded-2xl p-4 border shadow-sm ${
-                item.is_correct ? "border-teal/20" : "border-red-100"
-              }`}
-            >
-              <div className="flex items-start gap-2 mb-3">
-                {item.is_correct ? (
-                  <CheckCircle size={16} className="text-teal flex-shrink-0 mt-0.5" />
-                ) : (
-                  <XCircle size={16} className="text-red-500 flex-shrink-0 mt-0.5" />
-                )}
-                <p className="font-body text-sm text-ink leading-snug">
-                  <span className="font-semibold">{index + 1}. </span>
-                  {question?.text ?? `Question ${index + 1}`}
-                </p>
-              </div>
-
-              {question && (
-                <div className="space-y-1.5 mb-3">
-                  {question.options.map((option, oi) => {
-                    const isYours = item.your_answer === oi;
-                    const isCorrect = item.correct_answer === oi;
-                    return (
-                      <div
-                        key={oi}
-                        className={`flex items-center gap-2 p-2 rounded-xl text-xs font-body ${
-                          isCorrect
-                            ? "bg-teal/10 text-teal font-semibold"
-                            : isYours && !isCorrect
-                            ? "bg-red-50 text-red-600 font-semibold"
-                            : "text-ink-3"
-                        }`}
-                      >
-                        <span className="w-4 text-center font-display font-bold flex-shrink-0">
-                          {["A", "B", "C", "D"][oi]}
-                        </span>
-                        <span className="flex-1">{option}</span>
-                        {isCorrect && (
-                          <span className="text-teal font-semibold">✓ Correct</span>
-                        )}
-                        {isYours && !isCorrect && (
-                          <span className="text-red-500 font-semibold">✗ Yours</span>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-
-              {item.explanation && (
-                <div className="bg-amber/10 rounded-xl p-3">
-                  <p className="font-body text-xs text-ink leading-relaxed">
-                    <span className="font-semibold text-amber">Explanation: </span>
-                    {item.explanation}
+        {testLoading ? (
+          Array.from({ length: result.results.length || 3 }).map((_, index) => (
+            <Skeleton key={index} className="h-32 w-full rounded-2xl" />
+          ))
+        ) : (
+          result.results.map((item, index) => {
+            const question = test?.questions.find((q) => q.id === item.question_id);
+            const wasAnswered = item.your_answer >= 0;
+            return (
+              <div
+                key={item.question_id}
+                className={`bg-white rounded-2xl p-4 border shadow-sm ${
+                  item.is_correct ? "border-teal/20" : "border-red-100"
+                }`}
+              >
+                <div className="flex items-start gap-2 mb-3">
+                  {item.is_correct ? (
+                    <CheckCircle size={16} className="text-teal flex-shrink-0 mt-0.5" />
+                  ) : wasAnswered ? (
+                    <XCircle size={16} className="text-red-500 flex-shrink-0 mt-0.5" />
+                  ) : (
+                    <AlertTriangle size={16} className="text-amber flex-shrink-0 mt-0.5" />
+                  )}
+                  <p className="font-body text-sm text-ink leading-snug">
+                    <span className="font-semibold">{index + 1}. </span>
+                    {question?.text ?? `Question ${index + 1}`}
                   </p>
                 </div>
-              )}
-            </div>
-          );
-        })}
+
+                {!wasAnswered && (
+                  <div className="mb-3 rounded-xl bg-amber/10 px-3 py-2">
+                    <p className="font-body text-xs text-amber font-semibold">Unanswered</p>
+                  </div>
+                )}
+
+                {question && (
+                  <div className="space-y-1.5 mb-3">
+                    {question.options.map((option, oi) => {
+                      const isYours = wasAnswered && item.your_answer === oi;
+                      const isCorrect = item.correct_answer === oi;
+                      return (
+                        <div
+                          key={oi}
+                          className={`flex items-center gap-2 p-2 rounded-xl text-xs font-body ${
+                            isCorrect
+                              ? "bg-teal/10 text-teal font-semibold"
+                              : isYours
+                                ? "bg-red-50 text-red-600 font-semibold"
+                                : "text-ink-3"
+                          }`}
+                        >
+                          <span className="w-4 text-center font-display font-bold flex-shrink-0">
+                            {OPTION_LABELS[oi]}
+                          </span>
+                          <span className="flex-1">{option}</span>
+                          {isCorrect && <span className="text-teal font-semibold">Correct</span>}
+                          {isYours && !isCorrect && (
+                            <span className="text-red-500 font-semibold">Your answer</span>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {item.explanation && (
+                  <div className="bg-amber/10 rounded-xl p-3">
+                    <p className="font-body text-xs text-ink leading-relaxed">
+                      <span className="font-semibold text-amber">Explanation: </span>
+                      {item.explanation}
+                    </p>
+                  </div>
+                )}
+              </div>
+            );
+          })
+        )}
       </div>
 
-      {/* Fixed CTA */}
       <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-ink/5 z-10">
-        <div className="max-w-[430px] mx-auto">
-          <Button fullWidth onClick={() => navigate("/app/subjects")}>
-            Back to Subjects
+        <div className="max-w-[430px] mx-auto flex gap-3">
+          <Button
+            type="button"
+            variant="secondary"
+            className="flex-1"
+            onClick={() => navigate(`/app/tests/${id}`)}
+          >
+            <RotateCcw size={16} className="mr-2" />
+            Retry Test
+          </Button>
+          <Button type="button" className="flex-1" onClick={goBackToLesson}>
+            <BookOpen size={16} className="mr-2" />
+            {lessonId ? "Back to Lesson" : "Back to Subjects"}
           </Button>
         </div>
       </div>

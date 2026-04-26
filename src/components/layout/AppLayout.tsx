@@ -79,7 +79,7 @@ export function AppLayout() {
   return (
     <div className="min-h-screen bg-bg flex justify-center">
       <div className="relative w-full max-w-[430px] min-h-screen bg-bg">
-        <main className="pb-20">
+        <main style={{ paddingBottom: 'calc(5rem + env(safe-area-inset-bottom))' }}>
           <Outlet />
         </main>
         <BottomNav />
