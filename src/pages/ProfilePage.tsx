@@ -121,6 +121,78 @@ export function ProfilePage() {
         </div>
       </div>
 
+      {/* Study goal */}
+      {stats && (
+        <div className="px-4 mt-4">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="font-display font-bold text-sm text-ink">Study Goal</h2>
+            <button
+              type="button"
+              onClick={() => navigate("/app/goal-setup")}
+              className="text-teal text-xs font-body font-semibold"
+            >
+              Edit
+            </button>
+          </div>
+          <div className="bg-white rounded-2xl border border-ink/5 shadow-sm divide-y divide-ink/5">
+            {stats.days_to_exam !== null ? (
+              <div className="flex items-center gap-3 px-4 py-3">
+                <Icon name={Icons.timer} size={18} className="text-teal" aria-hidden />
+                <p className="font-body text-sm text-ink flex-1">
+                  {stats.days_to_exam === 0 ? "Exam day!" : `${stats.days_to_exam} days to exam`}
+                </p>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => navigate("/app/goal-setup")}
+                className="w-full flex items-center gap-3 px-4 py-3 text-left"
+              >
+                <Icon name={Icons.calendar} size={18} className="text-ink-3" aria-hidden />
+                <p className="font-body text-sm text-ink-3 flex-1">Set your exam date</p>
+                <Icon name={Icons.forward} size={14} className="text-ink-3" aria-hidden />
+              </button>
+            )}
+            <div className="flex items-center gap-3 px-4 py-3">
+              <Icon name={Icons.score} size={18} className="text-amber" aria-hidden />
+              <p className="font-body text-sm text-ink flex-1">
+                Score this week: <span className="font-semibold">{Math.round(stats.score_this_week)}%</span>
+                {stats.score_trend !== 0 && (
+                  <span className={`ml-2 text-xs font-semibold ${stats.score_trend > 0 ? "text-teal" : "text-red-500"}`}>
+                    {stats.score_trend > 0 ? "▲" : "▼"}{Math.abs(Math.round(stats.score_trend))}%
+                  </span>
+                )}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Quick links */}
+      <div className="px-4 mt-4">
+        <h2 className="font-display font-bold text-sm text-ink mb-3">More</h2>
+        <div className="bg-white rounded-2xl border border-ink/5 shadow-sm divide-y divide-ink/5">
+          <button
+            type="button"
+            onClick={() => navigate("/app/doubts")}
+            className="w-full flex items-center gap-3 px-4 py-3 text-left active:bg-bg"
+          >
+            <Icon name={Icons.doubts} size={18} className="text-teal" aria-hidden />
+            <p className="font-body text-sm text-ink flex-1">Ask a Doubt</p>
+            <Icon name={Icons.forward} size={14} className="text-ink-3" aria-hidden />
+          </button>
+          <button
+            type="button"
+            onClick={() => navigate("/app/pricing")}
+            className="w-full flex items-center gap-3 px-4 py-3 text-left active:bg-bg"
+          >
+            <Icon name={Icons.premium} size={18} className="text-amber" aria-hidden />
+            <p className="font-body text-sm text-ink flex-1">Plans & Pricing</p>
+            <Icon name={Icons.forward} size={14} className="text-ink-3" aria-hidden />
+          </button>
+        </div>
+      </div>
+
       {/* Subscription */}
       <div className="px-4 mt-4">
         <h2 className="font-display font-bold text-sm text-ink mb-3">Subscription</h2>

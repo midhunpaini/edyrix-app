@@ -1,4 +1,6 @@
 import { OptionButton } from "./OptionButton";
+import { Icon } from "../ui/Icon";
+import { Icons } from "../../lib/icons";
 import type { TestQuestion } from "../../types";
 import type { OptionState } from "./OptionButton";
 
@@ -14,6 +16,12 @@ interface QuestionCardProps {
   status: "correct" | "wrong" | "skipped";
 }
 
+const STATUS_CONFIG = {
+  correct: { icon: Icons.check,   color: "text-forest", label: "Correct" },
+  wrong:   { icon: Icons.wrong,   color: "text-rose",   label: "Wrong" },
+  skipped: { icon: Icons.skipped, color: "text-amber-dark", label: "Skipped" },
+} as const;
+
 export function QuestionCard({
   question,
   questionNumber,
@@ -23,16 +31,16 @@ export function QuestionCard({
   explanation,
   status,
 }: QuestionCardProps) {
-  const headerColor =
-    status === "correct" ? "text-forest" : status === "wrong" ? "text-rose" : "text-amber-dark";
-  const headerLabel =
-    status === "correct" ? "✓ Correct" : status === "wrong" ? "✗ Wrong" : "— Skipped";
+  const { icon, color, label } = STATUS_CONFIG[status];
 
   return (
     <div className="bg-white rounded-2xl border border-ink/8 overflow-hidden">
       <div className="flex items-center justify-between px-4 py-3 border-b border-ink/5 bg-ink/2">
         <span className="font-body text-xs font-semibold text-ink-3">Q{questionNumber}</span>
-        <span className={`font-body text-xs font-bold ${headerColor}`}>{headerLabel}</span>
+        <span className={`flex items-center gap-1 font-body text-xs font-bold ${color}`}>
+          <Icon name={icon} size={16} aria-hidden />
+          {label}
+        </span>
       </div>
 
       <div className="p-4">
@@ -40,9 +48,7 @@ export function QuestionCard({
         <div className="space-y-2">
           {question.options.map((opt, i) => {
             let optState: OptionState;
-            if (i === correctAnswer && i === studentAnswer) {
-              optState = "correct";
-            } else if (i === correctAnswer) {
+            if (i === correctAnswer) {
               optState = "correct";
             } else if (i === studentAnswer && !isCorrect) {
               optState = "wrong";
@@ -65,8 +71,9 @@ export function QuestionCard({
 
       {explanation && (
         <div className="bg-teal/5 border-t border-teal/10 px-4 py-3">
-          <p className="text-[11px] font-body font-bold text-teal uppercase tracking-wide mb-1.5">
-            💡 Explanation
+          <p className="text-[11px] font-body font-bold text-teal uppercase tracking-wide mb-1.5 flex items-center gap-1.5">
+            <Icon name={Icons.explanation} size={16} aria-hidden />
+            Explanation
           </p>
           <p className="font-body text-sm text-ink leading-relaxed">{explanation}</p>
         </div>

@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { MessageCircle, MessageSquare, Send } from "lucide-react";
 import { useDoubts, useSubmitDoubt } from "../hooks/useDoubts";
 import { Button } from "../components/ui/Button";
 import { Skeleton } from "../components/ui/Skeleton";
+import { Icon } from "../components/ui/Icon";
+import { Icons } from "../lib/icons";
 
 export function DoubtsPage() {
   const [question, setQuestion] = useState("");
@@ -51,8 +52,8 @@ export function DoubtsPage() {
                 </span>
               ) : (
                 <span className="flex items-center gap-2">
-                  <Send size={13} />
-                  Ask
+                  <Icon name={Icons.doubt} size={16} aria-hidden />
+                  Ask a Doubt
                 </span>
               )}
             </Button>
@@ -69,7 +70,7 @@ export function DoubtsPage() {
           ))
         ) : !doubts?.length ? (
           <div className="text-center py-16">
-            <MessageCircle size={40} className="text-ink/10 mx-auto mb-3" />
+            <Icon name={Icons.empty} size={40} className="text-ink/10 mx-auto mb-3 block" aria-hidden />
             <p className="font-body text-ink-3 text-sm">No doubts yet.</p>
             <p className="font-body text-ink-3 text-xs mt-1">Ask your first question above!</p>
           </div>
@@ -80,13 +81,14 @@ export function DoubtsPage() {
               className="bg-white rounded-2xl border border-ink/5 shadow-sm p-4"
             >
               <div className="flex items-start gap-2">
-                <MessageSquare size={14} className="text-ink-3 mt-0.5 flex-shrink-0" />
+                <Icon name={Icons.doubt} size={16} className="text-ink-3 mt-0.5 flex-shrink-0" aria-hidden />
                 <p className="font-body text-sm text-ink">{doubt.question_text}</p>
               </div>
 
               {doubt.status === "answered" && doubt.answer_text ? (
                 <div className="bg-teal/5 border border-teal/10 rounded-xl p-3 mt-3">
-                  <p className="font-body text-xs font-semibold text-teal mb-1">
+                  <p className="font-body text-xs font-semibold text-teal mb-1 flex items-center gap-1">
+                    <Icon name={Icons.answer} size={16} aria-hidden />
                     Teacher's Answer
                   </p>
                   <p className="font-body text-sm text-ink leading-relaxed">
@@ -95,7 +97,7 @@ export function DoubtsPage() {
                 </div>
               ) : (
                 <div className="flex items-center gap-1.5 mt-2">
-                  <span className="w-2 h-2 rounded-full bg-amber" />
+                  <Icon name={Icons.doubt} size={16} className="text-amber" aria-hidden />
                   <p className="font-body text-xs text-amber font-semibold">
                     Waiting for answer
                   </p>

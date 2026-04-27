@@ -28,7 +28,7 @@ export function TestTimer({ timeLeft, mode = "countdown", className = "" }: Test
     <div
       className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-display font-bold text-sm ${containerClass} ${className}`}
     >
-      <Icon name={isExpired ? Icons.timerOff : Icons.timer} size={13} aria-hidden />
+      <Icon name={isExpired ? Icons.timerOff : Icons.timer} size={16} aria-hidden />
       {formatTime(timeLeft)}
     </div>
   );

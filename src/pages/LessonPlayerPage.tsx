@@ -144,12 +144,12 @@ export function LessonPlayerPage() {
               >
                 {t === "lessons" ? (
                   <>
-                    <Icon name={Icons.lesson} size={15} aria-hidden />
+                    <Icon name={Icons.lesson} size={16} aria-hidden />
                     Lessons
                   </>
                 ) : (
                   <>
-                    <Icon name={Icons.note} size={15} aria-hidden />
+                    <Icon name={Icons.note} size={16} aria-hidden />
                     Notes
                   </>
                 )}
@@ -179,7 +179,7 @@ export function LessonPlayerPage() {
                       }`}
                     >
                       {lessonItem.watch_percentage >= 90 ? (
-                        <Icon name={Icons.check} size={14} className="text-forest" aria-hidden />
+                        <Icon name={Icons.complete} size={16} className="text-forest" aria-hidden />
                       ) : (
                         <span className="text-xs font-display font-bold">
                           {(chapter?.lessons ?? []).indexOf(lessonItem) + 1}
@@ -196,7 +196,7 @@ export function LessonPlayerPage() {
                       </p>
                     </div>
                     {lessonItem.is_locked && lessonItem.id !== id && (
-                      <Icon name={Icons.lock} size={12} className="text-ink-3 flex-shrink-0" aria-hidden />
+                      <Icon name={Icons.lock} size={16} className="text-ink-3 flex-shrink-0" aria-hidden />
                     )}
                   </button>
                 ))}
@@ -251,7 +251,7 @@ export function LessonPlayerPage() {
                       className="w-full"
                     >
                       <Button fullWidth variant="secondary">
-                        <Icon name={Icons.download} size={15} className="mr-2" aria-hidden />
+                        <Icon name={Icons.download} size={16} className="mr-2" aria-hidden />
                         Download PDF
                       </Button>
                     </a>

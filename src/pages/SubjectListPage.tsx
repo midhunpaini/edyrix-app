@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { BookOpen } from "lucide-react";
 import { useAuthStore } from "../store/authStore";
 import { useSubjects } from "../hooks/useContent";
 import { useProgressSummary } from "../hooks/useProgress";
+import { useSubscription } from "../hooks/useSubscription";
 import { PremiumLock } from "../components/content/PremiumLock";
 import { ProgressBar } from "../components/ui/ProgressBar";
 import { Skeleton } from "../components/ui/Skeleton";
+import { Icon } from "../components/ui/Icon";
+import { Icons } from "../lib/icons";
 
 export function SubjectListPage() {
   const navigate = useNavigate();
@@ -15,8 +17,13 @@ export function SubjectListPage() {
 
   const { data: subjects, isLoading } = useSubjects(classNum);
   const { data: progress } = useProgressSummary();
+  const { data: subscription } = useSubscription();
 
   const [filter, setFilter] = useState<string>("all");
+
+  const hasAnyAccess = subscription?.free_trial.active || subscription?.subscription?.status === "active";
+  const hasLockedSubjects = (subjects ?? []).some((s) => !s.has_access);
+  const showTrialBanner = !hasAnyAccess && hasLockedSubjects;
 
   const filters = [
     { key: "all", label: "All" },
@@ -37,6 +44,22 @@ export function SubjectListPage() {
           {classNum ? `Class ${classNum}` : "All Classes"}
         </p>
       </div>
+
+      {/* Trial CTA */}
+      {showTrialBanner && (
+        <button
+          type="button"
+          onClick={() => navigate("/app/pricing")}
+          className="mx-4 mt-3 w-[calc(100%-2rem)] flex items-center gap-3 bg-gradient-to-r from-amber/15 to-amber/5 border border-amber/30 rounded-2xl px-4 py-3 text-left active:scale-[0.98] transition-transform"
+        >
+          <Icon name={Icons.sparkle} size={22} className="text-amber flex-shrink-0" aria-hidden />
+          <div className="flex-1">
+            <p className="font-body font-bold text-sm text-ink">Unlock all subjects free for 7 days</p>
+            <p className="font-body text-xs text-ink-3 mt-0.5">No payment needed to start</p>
+          </div>
+          <Icon name={Icons.forward} size={16} className="text-amber" aria-hidden />
+        </button>
+      )}
 
       {/* Filter chips */}
       <div className="px-4 py-3 overflow-x-auto">
@@ -67,7 +90,7 @@ export function SubjectListPage() {
           </div>
         ) : filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center">
-            <BookOpen size={40} className="text-ink/20 mb-3" />
+            <Icon name={Icons.book} size={40} className="text-ink/20 mb-3 block" aria-hidden />
             <p className="font-body font-semibold text-ink-3">No subjects found</p>
           </div>
         ) : (

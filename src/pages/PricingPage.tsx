@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Check, Crown, Zap } from "lucide-react";
 import { RazorpayCheckout } from "../components/payments/RazorpayCheckout";
+import { Icon } from "../components/ui/Icon";
+import { Icons } from "../lib/icons";
 import { Modal } from "../components/ui/Modal";
 import { Skeleton } from "../components/ui/Skeleton";
 import { usePlans, useSubscription } from "../hooks/useSubscription";
@@ -44,7 +45,7 @@ function PlanCard({
     >
       {plan.is_featured && (
         <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-teal text-white text-[11px] font-body font-bold px-3 py-0.5 rounded-full flex items-center gap-1">
-          <Zap size={10} />
+          <Icon name={Icons.sparkle} size={12} aria-hidden />
           Most Popular
         </div>
       )}
@@ -78,7 +79,7 @@ function PlanCard({
       <ul className="space-y-1.5 mb-4">
         {plan.features.map((f) => (
           <li key={f} className="flex items-start gap-2 font-body text-xs text-ink">
-            <Check size={13} className="text-teal mt-0.5 shrink-0" />
+            <Icon name={Icons.check} size={13} className="text-teal mt-0.5 shrink-0" aria-hidden />
             {f}
           </li>
         ))}
@@ -126,7 +127,7 @@ export function PricingPage() {
 
       {activeSub && (
         <div className="mb-4 bg-teal/10 border border-teal/20 rounded-2xl p-3 flex items-center gap-2">
-          <Crown size={16} className="text-teal shrink-0" />
+          <Icon name={Icons.crown} size={16} className="text-teal shrink-0" aria-hidden />
           <div>
             <p className="font-body text-xs font-semibold text-teal">Active: {activeSub.plan.name}</p>
             {activeSub.expires_at && (

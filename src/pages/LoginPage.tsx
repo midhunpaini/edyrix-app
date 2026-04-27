@@ -5,7 +5,8 @@ import type { ConfirmationResult } from "firebase/auth";
 import { auth, RecaptchaVerifier, signInWithPhoneNumber } from "../lib/firebase";
 import { useDevLogin, useGoogleLogin, usePhoneVerifyOTP } from "../hooks/useAuth";
 import { Button } from "../components/ui/Button";
-import { ArrowLeft, Phone } from "lucide-react";
+import { Icon } from "../components/ui/Icon";
+import { Icons } from "../lib/icons";
 import type { User } from "../types";
 
 function OTPInput({ onComplete }: { onComplete: (otp: string) => void }) {
@@ -202,7 +203,7 @@ export function LoginPage() {
                     />
                   </div>
                   <Button fullWidth size="lg" loading={sending} onClick={handleSendOTP}>
-                    <Phone size={16} className="mr-2" />
+                    <Icon name={Icons.phone} size={16} className="mr-2" aria-hidden />
                     Send OTP
                   </Button>
                 </div>
@@ -212,7 +213,7 @@ export function LoginPage() {
                     onClick={() => setConfirmation(null)}
                     className="flex items-center gap-1 text-sm text-ink-3 font-body mb-4 hover:text-ink transition-colors"
                   >
-                    <ArrowLeft size={14} />
+                    <Icon name={Icons.back} size={16} aria-hidden />
                     Change number
                   </button>
                   <p className="text-sm text-ink-3 font-body mb-1 text-center">

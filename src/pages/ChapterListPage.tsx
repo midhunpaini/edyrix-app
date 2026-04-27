@@ -1,8 +1,9 @@
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, CheckCircle2, BookOpen, PenLine } from "lucide-react";
 import { useSubject } from "../hooks/useContent";
 import { ProgressBar } from "../components/ui/ProgressBar";
 import { Skeleton } from "../components/ui/Skeleton";
+import { Icon } from "../components/ui/Icon";
+import { Icons } from "../lib/icons";
 
 export function ChapterListPage() {
   const { id } = useParams<{ id: string }>();
@@ -24,7 +25,7 @@ export function ChapterListPage() {
           onClick={() => navigate(-1)}
           className="flex items-center gap-1 text-white/80 text-sm font-body mb-4 hover:text-white transition-colors"
         >
-          <ArrowLeft size={16} />
+          <Icon name={Icons.back} size={16} aria-hidden />
           Subjects
         </button>
         <div className="flex items-center gap-3">
@@ -64,7 +65,7 @@ export function ChapterListPage() {
           </>
         ) : (subject?.chapters ?? []).length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center">
-            <BookOpen size={40} className="text-ink/20 mb-3" />
+            <Icon name={Icons.book} size={40} className="text-ink/20 mb-3 block" aria-hidden />
             <p className="font-body font-semibold text-ink-3">No chapters yet</p>
             <p className="font-body text-sm text-ink-3 mt-1">Content is being added soon</p>
           </div>
@@ -88,7 +89,7 @@ export function ChapterListPage() {
                 }}
               >
                 {chapter.is_completed ? (
-                  <CheckCircle2 size={20} />
+                  <Icon name={Icons.complete} size={20} aria-hidden />
                 ) : (
                   chapter.chapter_number
                 )}
@@ -108,7 +109,7 @@ export function ChapterListPage() {
                   </span>
                   {chapter.has_test && (
                     <span className="flex items-center gap-0.5 text-[11px] text-amber font-body font-semibold">
-                      <PenLine size={11} />
+                      <Icon name={Icons.quiz} size={11} aria-hidden />
                       Test
                     </span>
                   )}

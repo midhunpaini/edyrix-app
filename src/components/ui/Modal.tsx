@@ -1,5 +1,6 @@
 import { useEffect } from "react";
-import { X } from "lucide-react";
+import { Icon } from "./Icon";
+import { Icons } from "../../lib/icons";
 import { clsx } from "clsx";
 
 interface ModalProps {
@@ -31,8 +32,12 @@ export function Modal({ open, onClose, title, children, className }: ModalProps)
         {title && (
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-display font-bold text-lg text-ink">{title}</h3>
-            <button onClick={onClose} className="p-1 rounded-full hover:bg-ink/5">
-              <X size={20} className="text-ink-3" />
+            <button
+              onClick={onClose}
+              className="flex items-center justify-center min-w-[44px] min-h-[44px] rounded-full hover:bg-ink/5"
+              aria-label="Close"
+            >
+              <Icon name={Icons.close} size={20} className="text-ink-3" aria-hidden />
             </button>
           </div>
         )}

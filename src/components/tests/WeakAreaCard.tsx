@@ -1,4 +1,5 @@
-import { BookMarked } from "lucide-react";
+import { Icon } from "../ui/Icon";
+import { Icons } from "../../lib/icons";
 
 interface WeakAreaCardProps {
   chapterTitle: string;
@@ -11,7 +12,7 @@ export function WeakAreaCard({ chapterTitle, accuracy, onRevise }: WeakAreaCardP
   return (
     <div className="bg-amber-pale border-l-4 border-amber rounded-xl p-4">
       <div className="flex items-center gap-2 mb-1">
-        <BookMarked size={14} className="text-amber-dark flex-shrink-0" />
+        <Icon name={Icons.warning} size={16} className="text-amber-dark flex-shrink-0" aria-hidden />
         <p className="font-body font-bold text-xs text-amber-dark uppercase tracking-wide">
           Needs Revision
         </p>
@@ -25,7 +26,8 @@ export function WeakAreaCard({ chapterTitle, accuracy, onRevise }: WeakAreaCardP
         onClick={onRevise}
         className="mt-2 inline-flex items-center gap-1 text-xs font-body font-semibold text-teal underline underline-offset-2 active:opacity-70"
       >
-        Revise this chapter →
+        Revise this chapter
+        <Icon name={Icons.forward} size={16} aria-hidden />
       </button>
     </div>
   );

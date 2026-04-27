@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Navigate, useNavigate, useParams, useLocation } from "react-router-dom";
-import { ChevronLeft, ChevronRight, Send, SkipForward } from "lucide-react";
+import { Icon } from "../../components/ui/Icon";
+import { Icons } from "../../lib/icons";
 import { TestTimer } from "../../components/tests/TestTimer";
 import { QuestionPalette } from "../../components/tests/QuestionPalette";
 import { OptionButton } from "../../components/tests/OptionButton";
@@ -133,9 +134,9 @@ export function LiveTestPage() {
           </span>
           <button
             onClick={() => handleNavigateToSubmit(false)}
-            className="flex items-center gap-1 bg-rose/10 text-rose px-3 py-1.5 rounded-xl font-body font-semibold text-xs active:bg-rose/20 transition-colors"
+            className="flex items-center gap-1.5 bg-rose/10 text-rose px-3 py-1.5 rounded-xl font-body font-semibold text-xs active:bg-rose/20 transition-colors"
           >
-            <Send size={12} />
+            <Icon name={Icons.submit} size={16} aria-hidden />
             Submit
           </button>
         </div>
@@ -197,17 +198,17 @@ export function LiveTestPage() {
           <button
             onClick={handlePrev}
             disabled={currentIndex === 0}
-            className="flex items-center gap-1 px-4 h-11 rounded-xl font-body font-semibold text-sm text-ink-3 bg-bg disabled:opacity-40 active:bg-ink/10 transition-colors flex-shrink-0"
+            className="flex items-center gap-1.5 px-4 h-11 rounded-xl font-body font-semibold text-sm text-ink-3 bg-bg disabled:opacity-40 active:bg-ink/10 transition-colors flex-shrink-0"
           >
-            <ChevronLeft size={16} />
+            <Icon name={Icons.back} size={20} aria-hidden />
             Prev
           </button>
 
           <button
             onClick={handleSkip}
-            className="flex items-center gap-1 px-4 h-11 rounded-xl font-body font-semibold text-sm text-amber border border-amber/30 bg-amber-pale active:bg-amber/20 transition-colors flex-shrink-0"
+            className="flex items-center gap-1.5 px-4 h-11 rounded-xl font-body font-semibold text-sm text-amber border border-amber/30 bg-amber-pale active:bg-amber/20 transition-colors flex-shrink-0"
           >
-            <SkipForward size={14} />
+            <Icon name={Icons.skip} size={20} aria-hidden />
             Skip
           </button>
 
@@ -217,7 +218,7 @@ export function LiveTestPage() {
               className="flex-1 h-11 rounded-xl bg-teal text-white font-body font-semibold text-sm flex items-center justify-center gap-2 active:bg-teal-dark transition-colors"
             >
               Review & Submit
-              <ChevronRight size={16} />
+              <Icon name={Icons.forward} size={20} aria-hidden />
             </button>
           ) : (
             <button
@@ -226,7 +227,7 @@ export function LiveTestPage() {
               className="flex-1 h-11 rounded-xl bg-teal text-white font-body font-semibold text-sm flex items-center justify-center gap-2 disabled:opacity-50 active:bg-teal-dark transition-colors"
             >
               Save & Next
-              <ChevronRight size={16} />
+              <Icon name={Icons.forward} size={20} aria-hidden />
             </button>
           )}
         </div>

@@ -1,3 +1,6 @@
+import { Icon } from "../ui/Icon";
+import { Icons } from "../../lib/icons";
+
 export type OptionState = "default" | "selected" | "correct" | "wrong" | "muted";
 
 interface OptionButtonProps {
@@ -39,6 +42,12 @@ export function OptionButton({ label, text, state, onClick, disabled }: OptionBu
         {label}
       </span>
       <span className="font-body text-sm leading-snug flex-1">{text}</span>
+      {state === "correct" && (
+        <Icon name={Icons.check} size={16} className="text-forest flex-shrink-0" aria-hidden />
+      )}
+      {state === "wrong" && (
+        <Icon name={Icons.wrong} size={16} className="text-rose flex-shrink-0" aria-hidden />
+      )}
     </button>
   );
 }

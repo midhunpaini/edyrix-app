@@ -1,8 +1,9 @@
 import { useNavigate, useParams, useLocation } from "react-router-dom";
-import { ArrowLeft, CheckCircle2, Lock, Clock, PenLine } from "lucide-react";
 import { toast } from "sonner";
 import { useChapter } from "../hooks/useContent";
 import { Skeleton } from "../components/ui/Skeleton";
+import { Icon } from "../components/ui/Icon";
+import { Icons } from "../lib/icons";
 import { useUIStore } from "../store/uiStore";
 
 function formatDuration(seconds: number | null): string {
@@ -62,7 +63,7 @@ export function LessonListPage() {
           onClick={() => navigate(-1)}
           className="flex items-center gap-1 text-white/80 text-sm font-body mb-4 hover:text-white transition-colors"
         >
-          <ArrowLeft size={16} />
+          <Icon name={Icons.back} size={16} aria-hidden />
           {state?.subjectName ?? "Chapters"}
         </button>
         {isLoading ? (
@@ -113,16 +114,16 @@ export function LessonListPage() {
                       {lesson.title}
                     </p>
                     {lesson.is_completed ? (
-                      <CheckCircle2 size={16} className="text-forest flex-shrink-0 mt-0.5" />
+                      <Icon name={Icons.complete} size={16} className="text-forest flex-shrink-0 mt-0.5" aria-hidden />
                     ) : lesson.is_locked ? (
-                      <Lock size={14} className="text-ink-3 flex-shrink-0 mt-0.5" />
+                      <Icon name={Icons.lock} size={16} className="text-ink-3 flex-shrink-0 mt-0.5" aria-hidden />
                     ) : null}
                   </div>
 
                   <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                     {lesson.duration_seconds && (
                       <span className="flex items-center gap-1 text-[11px] text-ink-3 font-body">
-                        <Clock size={11} />
+                        <Icon name={Icons.clock} size={11} aria-hidden />
                         {formatDuration(lesson.duration_seconds)}
                       </span>
                     )}
@@ -156,12 +157,12 @@ export function LessonListPage() {
                 >
                   {lesson.test.is_unlocked ? (
                     <>
-                      <PenLine size={14} />
+                      <Icon name={Icons.quiz} size={14} aria-hidden />
                       {lesson.test.last_attempt ? "Retake Test" : "Take Test"}
                     </>
                   ) : (
                     <>
-                      <Lock size={13} />
+                      <Icon name={Icons.lock} size={14} aria-hidden />
                       Complete lesson to unlock test
                     </>
                   )}

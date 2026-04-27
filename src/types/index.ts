@@ -7,6 +7,8 @@ export interface User {
   role: "student";
   current_class: number | null;
   medium: "english" | "malayalam";
+  onboarding_complete: boolean;
+  exam_date: string | null;
   free_trial_expires_at: string | null;
   created_at: string;
 }
@@ -172,6 +174,7 @@ export interface TestDetail {
 }
 
 export interface TestResult {
+  attempt_id: string;
   score: number;
   total_marks: number;
   percentage: number;
@@ -215,4 +218,33 @@ export interface UserStats {
   avg_test_score: number;
   streak_days: number;
   subjects_active: string[];
+  exam_date: string | null;
+  days_to_exam: number | null;
+  score_this_week: number;
+  score_last_week: number;
+  score_trend: number;
+  trial_days_left: number | null;
+}
+
+export interface ScoreWeek {
+  week_start: string;
+  avg_score: number;
+  attempt_count: number;
+}
+
+export interface SubjectTrajectory {
+  subject_id: string;
+  subject_name: string;
+  weeks: ScoreWeek[];
+}
+
+export interface UserGoal {
+  exam_date: string | null;
+  daily_minutes: number;
+  target_score: number;
+}
+
+export interface ShareText {
+  text: string;
+  wa_url: string;
 }

@@ -5,6 +5,7 @@ import { AppLayout } from "./components/layout/AppLayout";
 import { ChapterListPage } from "./pages/ChapterListPage";
 import { DashboardPage } from "./pages/DashboardPage";
 import { DoubtsPage } from "./pages/DoubtsPage";
+import { GoalSetupPage } from "./pages/GoalSetupPage";
 import { LessonListPage } from "./pages/LessonListPage";
 import { LessonPlayerPage } from "./pages/LessonPlayerPage";
 import { LoginPage } from "./pages/LoginPage";
@@ -33,7 +34,10 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
 
 function RootRedirect() {
   const token = useAuthStore((s) => s.token);
-  return <Navigate to={token ? "/app/dashboard" : "/login"} replace />;
+  const user = useAuthStore((s) => s.user);
+  if (!token) return <Navigate to="/login" replace />;
+  if (!user?.onboarding_complete) return <Navigate to="/onboarding" replace />;
+  return <Navigate to="/app/dashboard" replace />;
 }
 
 export default function App() {
@@ -70,6 +74,7 @@ export default function App() {
           <Route path="pricing" element={<PricingPage />} />
           <Route path="profile" element={<ProfilePage />} />
           <Route path="doubts" element={<DoubtsPage />} />
+          <Route path="goal-setup" element={<GoalSetupPage />} />
         </Route>
 
         {/* Full-screen test flow — no bottom nav */}

@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, ChevronRight, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 import { useChapterTest, useTest, useSubmitTest } from "../../hooks/useTests";
 import { TestTimer, formatTime } from "../../components/tests/TestTimer";
@@ -9,10 +8,18 @@ import { ExplanationCard } from "../../components/tests/ExplanationCard";
 import { ScoreCircle } from "../../components/tests/ScoreCircle";
 import { Button } from "../../components/ui/Button";
 import { Skeleton } from "../../components/ui/Skeleton";
+import { Icon } from "../../components/ui/Icon";
+import { Icons } from "../../lib/icons";
 import type { OptionState } from "../../components/tests/OptionButton";
 import type { TestResult } from "../../types";
 
 const LABELS = ["A", "B", "C", "D"];
+
+const STATUS_CONFIG = {
+  correct: { icon: Icons.check, color: "text-forest", label: "Correct" },
+  wrong:   { icon: Icons.wrong, color: "text-rose",   label: "Wrong" },
+  skipped: { icon: Icons.skipped, color: "text-amber-dark", label: "Skipped" },
+} as const;
 
 export function PracticeTestPage() {
   const { id: chapterId } = useParams<{ id: string }>();
@@ -111,15 +118,19 @@ export function PracticeTestPage() {
     return (
       <div className="min-h-screen bg-bg">
         <div className="flex items-center gap-3 px-4 pt-12 pb-3 bg-white border-b border-ink/5">
-          <button onClick={() => navigate(-1)} className="p-1.5 rounded-xl hover:bg-bg">
-            <ArrowLeft size={20} className="text-ink" />
+          <button
+            onClick={() => navigate(-1)}
+            className="flex items-center justify-center min-w-[44px] min-h-[44px] rounded-xl hover:bg-bg"
+            aria-label="Go back"
+          >
+            <Icon name={Icons.back} size={20} className="text-ink" aria-hidden />
           </button>
           <p className="font-body font-semibold text-ink text-sm">Practice Mode</p>
         </div>
         <div className="px-4 py-6">
           <div className="bg-white rounded-2xl border border-ink/5 p-5 shadow-sm">
             <div className="w-12 h-12 rounded-2xl bg-teal/10 flex items-center justify-center mb-4">
-              <span className="text-2xl">✏️</span>
+              <Icon name={Icons.quiz} size={24} className="text-teal" aria-hidden />
             </div>
             <h1 className="font-display font-bold text-xl text-ink mb-1">{test.title}</h1>
             <p className="font-body text-sm text-ink-3 mb-4">{test.chapter_title}</p>
@@ -146,9 +157,9 @@ export function PracticeTestPage() {
     const correctCount = result.results.filter((r) => r.is_correct).length;
     const msg =
       result.percentage >= 90
-        ? "Outstanding work! 🎉"
+        ? "Outstanding work!"
         : result.percentage >= 70
-        ? "Great effort! Keep it up 💪"
+        ? "Great effort! Keep it up"
         : result.percentage >= 40
         ? "Good try! Review the explanations."
         : "Keep practising, you'll get there!";
@@ -156,8 +167,12 @@ export function PracticeTestPage() {
     return (
       <div className="min-h-screen bg-bg">
         <div className="flex items-center gap-3 px-4 pt-12 pb-3 bg-white border-b border-ink/5">
-          <button onClick={() => navigate(-1)} className="p-1.5 rounded-xl hover:bg-bg">
-            <ArrowLeft size={20} className="text-ink" />
+          <button
+            onClick={() => navigate(-1)}
+            className="flex items-center justify-center min-w-[44px] min-h-[44px] rounded-xl hover:bg-bg"
+            aria-label="Go back"
+          >
+            <Icon name={Icons.back} size={20} className="text-ink" aria-hidden />
           </button>
           <p className="font-body font-semibold text-ink text-sm">Practice Complete</p>
         </div>
@@ -187,12 +202,14 @@ export function PracticeTestPage() {
               const r = result.results.find((x) => x.question_id === q.id);
               if (!r) return null;
               const status = r.your_answer < 0 ? "skipped" : r.is_correct ? "correct" : "wrong";
+              const cfg = STATUS_CONFIG[status];
               return (
                 <div key={q.id} className="bg-white rounded-2xl border border-ink/8 overflow-hidden">
                   <div className="flex items-center justify-between px-4 py-2.5 border-b border-ink/5 bg-ink/2">
                     <span className="font-body text-xs font-semibold text-ink-3">Q{i + 1}</span>
-                    <span className={`font-body text-xs font-bold ${status === "correct" ? "text-forest" : status === "wrong" ? "text-rose" : "text-amber-dark"}`}>
-                      {status === "correct" ? "✓ Correct" : status === "wrong" ? "✗ Wrong" : "— Skipped"}
+                    <span className={`flex items-center gap-1 font-body text-xs font-bold ${cfg.color}`}>
+                      <Icon name={cfg.icon} size={14} aria-hidden />
+                      {cfg.label}
                     </span>
                   </div>
                   <div className="p-4">
@@ -221,7 +238,7 @@ export function PracticeTestPage() {
             style={{ paddingBottom: "calc(1.5rem + env(safe-area-inset-bottom))" }}
           >
             <Button variant="secondary" fullWidth onClick={handleRetry}>
-              <RotateCcw size={15} className="mr-2" />
+              <Icon name={Icons.refresh} size={16} className="mr-2" aria-hidden />
               Retry
             </Button>
             <Button fullWidth onClick={() => navigate(-1)}>Back to Chapter</Button>
@@ -235,8 +252,12 @@ export function PracticeTestPage() {
     <div className="min-h-screen bg-bg">
       <div className="sticky top-0 z-10 bg-white border-b border-ink/5">
         <div className="flex items-center justify-between px-4 pt-12 pb-3">
-          <button onClick={() => navigate(-1)} className="p-1.5 rounded-xl hover:bg-bg">
-            <ArrowLeft size={20} className="text-ink" />
+          <button
+            onClick={() => navigate(-1)}
+            className="flex items-center justify-center min-w-[44px] min-h-[44px] rounded-xl hover:bg-bg"
+            aria-label="Go back"
+          >
+            <Icon name={Icons.back} size={20} className="text-ink" aria-hidden />
           </button>
           <div className="flex items-center gap-2">
             <span className="font-body text-xs text-ink-3">
@@ -320,7 +341,7 @@ export function PracticeTestPage() {
               onClick={handleNext}
             >
               Next Question
-              <ChevronRight size={16} className="ml-1" />
+              <Icon name={Icons.forward} size={16} className="ml-1" aria-hidden />
             </Button>
           )}
         </div>

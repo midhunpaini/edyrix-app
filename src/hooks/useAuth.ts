@@ -15,7 +15,8 @@ interface UpdateMeInput {
   name?: string;
   current_class?: number;
   medium?: "english" | "malayalam";
-  avatar_url?: string;
+  onboarding_complete?: boolean;
+  exam_date?: string | null;
 }
 
 export function useMe() {

@@ -1,9 +1,10 @@
 import { useNavigate, useParams, useLocation } from "react-router-dom";
-import { ArrowLeft, Clock, FileText, Star, Trophy, ChevronRight } from "lucide-react";
 import type { AxiosError } from "axios";
 import { useTest } from "../../hooks/useTests";
 import { Button } from "../../components/ui/Button";
 import { Skeleton } from "../../components/ui/Skeleton";
+import { Icon } from "../../components/ui/Icon";
+import { Icons } from "../../lib/icons";
 import type { LastAttempt, TestDetail } from "../../types";
 
 const INSTRUCTIONS = [
@@ -25,6 +26,12 @@ function daysSince(dateStr: string): string {
   if (days === 1) return "yesterday";
   return `${days} days ago`;
 }
+
+const STATS = [
+  { key: "questions", label: "Questions", iconName: Icons.quiz },
+  { key: "duration",  label: "Duration",  iconName: Icons.timer },
+  { key: "marks",     label: "Marks",     iconName: Icons.star },
+] as const;
 
 export function PreTestPage() {
   const { id } = useParams<{ id: string }>();
@@ -57,14 +64,18 @@ export function PreTestPage() {
     return (
       <div className="min-h-screen bg-bg flex flex-col">
         <div className="flex items-center gap-3 px-4 pt-12 pb-3 bg-white border-b border-ink/5">
-          <button onClick={() => navigate(-1)} className="p-1.5 rounded-xl hover:bg-bg">
-            <ArrowLeft size={20} className="text-ink" />
+          <button
+            onClick={() => navigate(-1)}
+            className="flex items-center justify-center min-w-[44px] min-h-[44px] rounded-full hover:bg-bg active:scale-95 transition-all"
+            aria-label="Go back"
+          >
+            <Icon name={Icons.back} size={24} />
           </button>
           <p className="font-body font-semibold text-ink text-sm">Test Locked</p>
         </div>
         <div className="flex-1 flex flex-col items-center justify-center px-6 text-center">
           <div className="w-16 h-16 rounded-full bg-amber/10 flex items-center justify-center mb-4">
-            <span className="text-3xl">🔒</span>
+            <Icon name={Icons.lock} size={32} label="Content locked" className="text-amber" />
           </div>
           <h1 className="font-display font-bold text-xl text-ink mb-2">Complete the lesson first</h1>
           <p className="font-body text-sm text-ink-3 max-w-[280px] mb-6">
@@ -94,15 +105,22 @@ export function PreTestPage() {
     navigate(`/app/tests/${id}/live`, { state: { testData: test as TestDetail } });
   }
 
+  const statValues = [
+    test.questions.length,
+    `${test.duration_minutes} min`,
+    test.total_marks,
+  ];
+
   return (
     <div className="min-h-screen bg-bg flex flex-col">
       {/* Hero */}
       <div className="bg-ink px-4 pt-12 pb-10 relative">
         <button
           onClick={() => navigate(-1)}
-          className="absolute top-12 left-4 p-1.5 rounded-xl hover:bg-white/10 transition-colors"
+          className="absolute top-12 left-4 flex items-center justify-center min-w-[44px] min-h-[44px] rounded-full hover:bg-white/10 active:scale-95 transition-all"
+          aria-label="Go back"
         >
-          <ArrowLeft size={20} className="text-white" />
+          <Icon name={Icons.back} size={24} className="text-white" />
         </button>
 
         <div className="mt-8">
@@ -123,14 +141,10 @@ export function PreTestPage() {
       {/* Stats strip */}
       <div className="px-4 -mt-5 z-10">
         <div className="grid grid-cols-3 gap-2">
-          {[
-            { label: "Questions", value: test.questions.length, Icon: FileText },
-            { label: "Duration", value: `${test.duration_minutes} min`, Icon: Clock },
-            { label: "Marks", value: test.total_marks, Icon: Star },
-          ].map(({ label, value, Icon }) => (
-            <div key={label} className="bg-white rounded-2xl p-3 text-center shadow-sm border border-ink/5">
-              <Icon size={16} className="text-teal mx-auto mb-1" />
-              <p className="font-display font-bold text-ink text-base leading-none">{value}</p>
+          {STATS.map(({ key, label, iconName }, i) => (
+            <div key={key} className="bg-white rounded-2xl p-3 text-center shadow-sm border border-ink/5">
+              <Icon name={iconName} size={16} className="text-teal mx-auto mb-1" aria-hidden />
+              <p className="font-display font-bold text-ink text-base leading-none">{statValues[i]}</p>
               <p className="font-body text-[10px] text-ink-3 mt-1">{label}</p>
             </div>
           ))}
@@ -142,7 +156,7 @@ export function PreTestPage() {
         {lastAttempt && (
           <div className="bg-white rounded-2xl border border-ink/5 p-4 flex items-center gap-3 shadow-sm">
             <div className="w-10 h-10 rounded-xl bg-amber/10 flex items-center justify-center flex-shrink-0">
-              <Trophy size={18} className="text-amber" />
+              <Icon name={Icons.trophy} size={18} className="text-amber" aria-hidden />
             </div>
             <div className="flex-1">
               <p className="font-body text-xs text-ink-3 mb-0.5">Last attempt</p>
@@ -156,7 +170,6 @@ export function PreTestPage() {
           </div>
         )}
 
-        {/* Divider */}
         <div className="h-px bg-ink/8" />
 
         {/* Instructions */}
@@ -180,7 +193,7 @@ export function PreTestPage() {
       >
         <Button fullWidth size="lg" onClick={handleBegin}>
           Begin Test
-          <ChevronRight size={18} className="ml-2" />
+          <Icon name={Icons.play} size={20} className="ml-2" aria-hidden />
         </Button>
       </div>
     </div>

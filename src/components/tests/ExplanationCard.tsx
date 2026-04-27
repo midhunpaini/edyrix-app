@@ -12,7 +12,7 @@ export function ExplanationCard({ text, visible }: ExplanationCardProps) {
   return (
     <div className="animate-slide-up mt-4 rounded-xl overflow-hidden border border-teal/20">
       <div className="bg-teal/8 px-4 py-2.5 border-b border-teal/15 flex items-center gap-1.5">
-        <Icon name={Icons.explanation} size={14} className="text-teal" aria-hidden />
+        <Icon name={Icons.explanation} size={16} className="text-teal" aria-hidden />
         <p className="text-[11px] font-body font-bold text-teal uppercase tracking-wider">
           Explanation
         </p>

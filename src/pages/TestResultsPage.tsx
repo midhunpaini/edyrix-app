@@ -1,20 +1,11 @@
 import { useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import {
-  AlertTriangle,
-  ArrowLeft,
-  BookOpen,
-  CheckCircle,
-  Clock,
-  Lock,
-  PenLine,
-  RotateCcw,
-  XCircle,
-} from "lucide-react";
 import { toast } from "sonner";
 import { useAvailableTests, useTest, useTestHistory } from "../hooks/useTests";
 import { Button } from "../components/ui/Button";
 import { Skeleton } from "../components/ui/Skeleton";
+import { Icon } from "../components/ui/Icon";
+import { Icons } from "../lib/icons";
 import type { AvailableTest, TestResult } from "../types";
 import { useUIStore } from "../store/uiStore";
 
@@ -131,7 +122,7 @@ export function TestResultsPage() {
               ))
             ) : !availableTests?.length ? (
               <div className="text-center py-16">
-                <PenLine size={34} className="mx-auto text-ink/20 mb-3" />
+                <Icon name={Icons.quiz} size={34} className="mx-auto text-ink/20 mb-3 block" aria-hidden />
                 <p className="font-body text-ink-3 text-sm">No tests available yet.</p>
                 <p className="font-body text-ink-3 text-xs mt-1">
                   Open a subject and complete a lesson to unlock tests.
@@ -151,7 +142,11 @@ export function TestResultsPage() {
                         item.is_unlocked ? "bg-amber/10 text-amber" : "bg-ink/5 text-ink-3"
                       }`}
                     >
-                      {item.is_unlocked ? <PenLine size={18} /> : <Lock size={16} />}
+                      {item.is_unlocked ? (
+                        <Icon name={Icons.quiz} size={18} aria-hidden />
+                      ) : (
+                        <Icon name={Icons.lock} size={16} aria-hidden />
+                      )}
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="font-body font-semibold text-ink text-sm truncate">
@@ -162,7 +157,7 @@ export function TestResultsPage() {
                       </p>
                       <div className="flex items-center gap-2 mt-2 flex-wrap">
                         <span className="flex items-center gap-1 text-[11px] text-ink-3 font-body">
-                          <Clock size={11} />
+                          <Icon name={Icons.timer} size={11} aria-hidden />
                           {item.duration_minutes} min
                         </span>
                         <span className="text-[11px] text-ink-3 font-body">
@@ -265,9 +260,10 @@ export function TestResultsPage() {
         <button
           type="button"
           onClick={() => navigate("/app/tests")}
-          className="p-1.5 rounded-xl hover:bg-bg transition-colors"
+          className="flex items-center justify-center min-w-[44px] min-h-[44px] rounded-xl hover:bg-bg transition-colors"
+          aria-label="Back to tests"
         >
-          <ArrowLeft size={20} className="text-ink" />
+          <Icon name={Icons.back} size={20} className="text-ink" aria-hidden />
         </button>
         <div className="flex-1 min-w-0">
           <p className="font-body font-semibold text-ink text-sm truncate">{testTitle}</p>
@@ -298,11 +294,11 @@ export function TestResultsPage() {
               >
                 <div className="flex items-start gap-2 mb-3">
                   {item.is_correct ? (
-                    <CheckCircle size={16} className="text-teal flex-shrink-0 mt-0.5" />
+                    <Icon name={Icons.check} size={16} className="text-teal flex-shrink-0 mt-0.5" aria-hidden />
                   ) : wasAnswered ? (
-                    <XCircle size={16} className="text-red-500 flex-shrink-0 mt-0.5" />
+                    <Icon name={Icons.wrong} size={16} className="text-red-500 flex-shrink-0 mt-0.5" aria-hidden />
                   ) : (
-                    <AlertTriangle size={16} className="text-amber flex-shrink-0 mt-0.5" />
+                    <Icon name={Icons.warning} size={16} className="text-amber flex-shrink-0 mt-0.5" aria-hidden />
                   )}
                   <p className="font-body text-sm text-ink leading-snug">
                     <span className="font-semibold">{index + 1}. </span>
@@ -368,11 +364,11 @@ export function TestResultsPage() {
             className="flex-1"
             onClick={() => navigate(`/app/tests/${id}`)}
           >
-            <RotateCcw size={16} className="mr-2" />
+            <Icon name={Icons.refresh} size={16} className="mr-2" aria-hidden />
             Retry Test
           </Button>
           <Button type="button" className="flex-1" onClick={goBackToLesson}>
-            <BookOpen size={16} className="mr-2" />
+            <Icon name={Icons.book} size={16} className="mr-2" aria-hidden />
             {lessonId ? "Back to Lesson" : "Back to Subjects"}
           </Button>
         </div>

@@ -1,19 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import type { AxiosError } from "axios";
-import {
-  AlertTriangle,
-  ArrowLeft,
-  ArrowRight,
-  CheckCircle,
-  Clock,
-  Lock,
-  PenLine,
-  PlayCircle,
-} from "lucide-react";
 import { useTest, useSubmitTest } from "../hooks/useTests";
 import { Button } from "../components/ui/Button";
 import { Skeleton } from "../components/ui/Skeleton";
+import { Icon } from "../components/ui/Icon";
+import { Icons } from "../lib/icons";
 
 const OPTION_LABELS = ["A", "B", "C", "D"];
 const AUTO_ADVANCE_MS = 250;
@@ -193,14 +185,18 @@ export function TestPage() {
     return (
       <div className="min-h-screen bg-bg flex flex-col">
         <div className="flex items-center gap-3 px-4 pt-12 pb-3 bg-white border-b border-ink/5">
-          <button onClick={() => navigate(-1)} className="p-1.5 rounded-xl hover:bg-bg">
-            <ArrowLeft size={20} className="text-ink" />
+          <button
+            onClick={() => navigate(-1)}
+            className="flex items-center justify-center min-w-[44px] min-h-[44px] rounded-xl hover:bg-bg"
+            aria-label="Go back"
+          >
+            <Icon name={Icons.back} size={20} className="text-ink" aria-hidden />
           </button>
           <p className="font-body font-semibold text-ink text-sm">Test Locked</p>
         </div>
         <div className="flex-1 flex flex-col items-center justify-center px-6 text-center">
           <div className="w-16 h-16 rounded-full bg-amber/10 flex items-center justify-center mb-4">
-            <Lock size={28} className="text-amber" />
+            <Icon name={Icons.lock} size={28} className="text-amber" aria-hidden />
           </div>
           <h1 className="font-display font-bold text-xl text-ink mb-2">Complete the lesson first</h1>
           <p className="font-body text-sm text-ink-3 max-w-[280px] mb-6">
@@ -235,8 +231,12 @@ export function TestPage() {
     return (
       <div className="min-h-screen bg-bg">
         <div className="flex items-center gap-3 px-4 pt-12 pb-3 bg-white border-b border-ink/5">
-          <button onClick={() => navigate(-1)} className="p-1.5 rounded-xl hover:bg-bg">
-            <ArrowLeft size={20} className="text-ink" />
+          <button
+            onClick={() => navigate(-1)}
+            className="flex items-center justify-center min-w-[44px] min-h-[44px] rounded-xl hover:bg-bg"
+            aria-label="Go back"
+          >
+            <Icon name={Icons.back} size={20} className="text-ink" aria-hidden />
           </button>
           <div className="flex-1 min-w-0">
             <p className="font-body font-semibold text-ink text-sm truncate">{test.title}</p>
@@ -247,7 +247,7 @@ export function TestPage() {
         <div className="px-4 py-5">
           <div className="bg-white rounded-2xl border border-ink/5 p-5 shadow-sm">
             <div className="w-14 h-14 rounded-2xl bg-amber/10 flex items-center justify-center mb-4">
-              <PenLine size={24} className="text-amber" />
+              <Icon name={Icons.quiz} size={24} className="text-amber" aria-hidden />
             </div>
             <h1 className="font-display font-bold text-xl text-ink mb-1">{test.title}</h1>
             <p className="font-body text-sm text-ink-3 mb-4">
@@ -268,7 +268,7 @@ export function TestPage() {
               </div>
             </div>
             <Button fullWidth size="lg" onClick={() => setStarted(true)}>
-              <PlayCircle size={17} className="mr-2" />
+              <Icon name={Icons.play} size={18} className="mr-2" aria-hidden />
               Start Test
             </Button>
           </div>
@@ -283,9 +283,10 @@ export function TestPage() {
         <div className="flex items-center gap-3">
           <button
             onClick={() => navigate(-1)}
-            className="p-1.5 rounded-xl hover:bg-bg transition-colors"
+            className="flex items-center justify-center min-w-[44px] min-h-[44px] rounded-xl hover:bg-bg transition-colors"
+            aria-label="Go back"
           >
-            <ArrowLeft size={20} className="text-ink" />
+            <Icon name={Icons.back} size={20} className="text-ink" aria-hidden />
           </button>
           <div className="flex-1 min-w-0">
             <p className="font-display font-bold text-ink text-sm truncate">{test.title}</p>
@@ -298,7 +299,7 @@ export function TestPage() {
               isTimeCritical ? "bg-red-50 text-red-600" : "bg-teal/10 text-teal"
             }`}
           >
-            <Clock size={14} />
+            <Icon name={Icons.timer} size={14} aria-hidden />
             {timeLeft !== null ? formatTime(timeLeft) : `${test.duration_minutes}:00`}
           </div>
         </div>
@@ -361,7 +362,7 @@ export function TestPage() {
         >
           {!isCurrentAnswered && (
             <p className="text-xs text-amber font-body text-center flex items-center justify-center gap-1">
-              <AlertTriangle size={12} />
+              <Icon name={Icons.warning} size={12} aria-hidden />
               Choose an answer to continue
             </p>
           )}
@@ -389,7 +390,7 @@ export function TestPage() {
                 disabled={!isCurrentAnswered || isAdvancing || submitted || submitMutation.isPending}
               >
                 Next
-                <ArrowRight size={16} className="ml-2" />
+                <Icon name={Icons.forward} size={16} className="ml-2" aria-hidden />
               </Button>
             ) : allQuestionsAnswered ? (
               <Button
@@ -406,7 +407,7 @@ export function TestPage() {
                   </span>
                 ) : (
                   <span className="flex items-center gap-2">
-                    <CheckCircle size={16} />
+                    <Icon name={Icons.check} size={16} aria-hidden />
                     Submit Test
                   </span>
                 )}

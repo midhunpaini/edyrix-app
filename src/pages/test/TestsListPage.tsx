@@ -1,7 +1,8 @@
 import { useNavigate } from "react-router-dom";
-import { BookOpen, ChevronRight, Clock, Lock, CheckCircle } from "lucide-react";
 import { useAvailableTests } from "../../hooks/useTests";
 import { Skeleton } from "../../components/ui/Skeleton";
+import { Icon } from "../../components/ui/Icon";
+import { Icons } from "../../lib/icons";
 import type { AvailableTest } from "../../types";
 
 function TestCard({ test, onClick }: { test: AvailableTest; onClick: () => void }) {
@@ -16,11 +17,11 @@ function TestCard({ test, onClick }: { test: AvailableTest; onClick: () => void 
       <div className="flex items-start gap-3 p-4">
         <div className="w-10 h-10 rounded-xl bg-teal/10 flex items-center justify-center flex-shrink-0">
           {isLocked ? (
-            <Lock size={18} className="text-teal" />
+            <Icon name={Icons.lock} size={18} className="text-teal" aria-hidden />
           ) : lastAttempt ? (
-            <CheckCircle size={18} className="text-forest" />
+            <Icon name={Icons.complete} size={18} className="text-forest" aria-hidden />
           ) : (
-            <BookOpen size={18} className="text-teal" />
+            <Icon name={Icons.quiz} size={18} className="text-teal" aria-hidden />
           )}
         </div>
 
@@ -32,7 +33,7 @@ function TestCard({ test, onClick }: { test: AvailableTest; onClick: () => void 
 
           <div className="flex items-center gap-3 mt-2">
             <span className="flex items-center gap-1 font-body text-[11px] text-ink-3">
-              <Clock size={11} />
+              <Icon name={Icons.timer} size={11} aria-hidden />
               {test.duration_minutes} min
             </span>
             <span className="font-body text-[11px] text-ink-3">
@@ -46,7 +47,7 @@ function TestCard({ test, onClick }: { test: AvailableTest; onClick: () => void 
           </div>
         </div>
 
-        <ChevronRight size={16} className="text-ink-3 flex-shrink-0 mt-1" />
+        <Icon name={Icons.forward} size={16} className="text-ink-3 flex-shrink-0 mt-1" aria-hidden />
       </div>
 
       {isLocked && (
@@ -85,7 +86,7 @@ export function TestsListPage() {
           </div>
         ) : tests?.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center">
-            <BookOpen size={40} className="text-ink/20 mb-3" />
+            <Icon name={Icons.quiz} size={40} className="text-ink/20 mb-3 block" aria-hidden />
             <p className="font-body font-semibold text-ink-3 text-sm">No tests yet</p>
             <p className="font-body text-xs text-ink-3 mt-1">Complete lessons to unlock chapter tests</p>
           </div>
