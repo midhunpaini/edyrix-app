@@ -36,4 +36,24 @@
 @layer utilities {
   .animate-slide-up { animation: slideUp 0.3s ease; }
   .animate-pop      { animation: pop 0.4s ease; }
+
+  .touch {
+    min-width: 44px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .skeleton {
+    background: linear-gradient(90deg, #e8e6e0 25%, #f2f0eb 50%, #e8e6e0 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.4s infinite;
+    border-radius: 8px;
+  }
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }

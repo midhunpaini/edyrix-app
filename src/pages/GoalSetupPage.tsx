@@ -1,39 +1,61 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useGoal, useUpdateGoal } from "../hooks/useGoals";
 import { useUpdateMe } from "../hooks/useAuth";
 import { Button } from "../components/ui/Button";
-import { Icon } from "../components/ui/Icon";
-import { Icons } from "../lib/icons";
+import { PageHeader } from "../components/layout/PageHeader";
 
-const DAILY_OPTIONS = [15, 30, 45, 60, 90];
+const DAILY_OPTIONS = [15, 30, 45, 60];
 const SCORE_OPTIONS = [50, 60, 70, 80, 90];
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 export function GoalSetupPage() {
   const navigate = useNavigate();
   const { data: existing } = useGoal();
   const updateGoal = useUpdateGoal();
   const updateMe = useUpdateMe();
+  const [saveState, setSaveState] = useState<"idle" | "success">("idle");
 
-  const [examDate, setExamDate] = useState(existing?.exam_date ?? "");
-  const [dailyMinutes, setDailyMinutes] = useState(existing?.daily_minutes ?? 30);
-  const [targetScore, setTargetScore] = useState(existing?.target_score ?? 70);
+  const currentYear = new Date().getFullYear();
+  const yearOptions = useMemo(() => [currentYear, currentYear + 1, currentYear + 2], [currentYear]);
+
+  const [selectedMonth, setSelectedMonth] = useState<number | null>(null);
+  const [selectedYear, setSelectedYear] = useState<number | null>(null);
+  const [dailyMinutes, setDailyMinutes] = useState(30);
+  const [targetScore, setTargetScore] = useState(70);
+
+  useEffect(() => {
+    if (!existing) return;
+    setDailyMinutes(existing.daily_minutes ?? 30);
+    setTargetScore(existing.target_score ?? 70);
+    if (existing.exam_date) {
+      const dt = new Date(existing.exam_date);
+      if (!Number.isNaN(dt.getTime())) {
+        setSelectedMonth(dt.getMonth() + 1);
+        setSelectedYear(dt.getFullYear());
+      }
+    }
+  }, [existing]);
+
+  const examDate =
+    selectedMonth && selectedYear
+      ? `${selectedYear}-${String(selectedMonth).padStart(2, "0")}-01`
+      : null;
 
   function handleSave() {
     updateGoal.mutate(
       {
-        exam_date: examDate || null,
+        exam_date: examDate,
         daily_minutes: dailyMinutes,
         target_score: targetScore,
       },
       {
         onSuccess: () => {
-          if (examDate) {
-            updateMe.mutate({ exam_date: examDate });
-          }
-          toast.success("Goal saved!");
-          navigate(-1);
+          updateMe.mutate({ exam_date: examDate });
+          setSaveState("success");
+          toast.success("Goal saved");
+          window.setTimeout(() => setSaveState("idle"), 1400);
         },
         onError: () => toast.error("Could not save goal. Try again."),
       }
@@ -42,88 +64,97 @@ export function GoalSetupPage() {
 
   return (
     <div className="min-h-screen bg-bg">
-      <div className="flex items-center gap-3 px-4 pt-12 pb-3 bg-white border-b border-ink/5">
-        <button
-          type="button"
-          onClick={() => navigate(-1)}
-          className="flex items-center justify-center min-w-[44px] min-h-[44px] rounded-xl hover:bg-bg"
-          aria-label="Go back"
-        >
-          <Icon name={Icons.back} size={20} className="text-ink" aria-hidden />
-        </button>
-        <h1 className="font-display font-bold text-base text-ink">Study Goal</h1>
-      </div>
+      <PageHeader
+        variant="plain"
+        title="Study goal"
+        subtitle="Set your targets"
+        onBack={() => navigate(-1)}
+        backLabel="Profile"
+      />
 
       <div className="px-4 py-5 space-y-6 max-w-[430px] mx-auto">
-        {/* Exam date */}
-        <div>
-          <label className="font-body text-xs font-semibold text-ink-3 uppercase tracking-wide mb-2 block">
-            Exam Date (optional)
-          </label>
-          <input
-            type="date"
-            value={examDate}
-            onChange={(e) => setExamDate(e.target.value)}
-            className="w-full h-12 px-4 rounded-2xl border border-ink/10 bg-white font-body text-sm text-ink focus:outline-none focus:border-teal"
-          />
-          <p className="font-body text-xs text-ink-3 mt-1.5">
-            We'll show a countdown on your dashboard.
-          </p>
-        </div>
+        <section>
+          <p className="font-body text-sm font-semibold text-ink mb-2">Exam month</p>
+          <div className="flex flex-wrap gap-2">
+            {MONTHS.map((month, index) => (
+              <button
+                key={month}
+                type="button"
+                onClick={() => setSelectedMonth(index + 1)}
+                className={
+                  selectedMonth === index + 1
+                    ? "px-3 py-2 rounded-lg bg-teal text-white text-xs font-body font-semibold"
+                    : "px-3 py-2 rounded-lg bg-white border border-ink/10 text-xs font-body font-semibold text-ink-3"
+                }
+              >
+                {month}
+              </button>
+            ))}
+          </div>
+        </section>
 
-        {/* Daily study target */}
-        <div>
-          <p className="font-body text-xs font-semibold text-ink-3 uppercase tracking-wide mb-2">
-            Daily Study Target
-          </p>
+        <section>
+          <p className="font-body text-sm font-semibold text-ink mb-2">Exam year</p>
+          <div className="flex gap-2">
+            {yearOptions.map((year) => (
+              <button
+                key={year}
+                type="button"
+                onClick={() => setSelectedYear(year)}
+                className={
+                  selectedYear === year
+                    ? "px-4 py-2 rounded-lg bg-teal text-white text-sm font-body font-semibold"
+                    : "px-4 py-2 rounded-lg bg-white border border-ink/10 text-sm font-body font-semibold text-ink-3"
+                }
+              >
+                {year}
+              </button>
+            ))}
+          </div>
+        </section>
+
+        <section>
+          <p className="font-body text-sm font-semibold text-ink mb-2">Daily study target</p>
           <div className="flex gap-2 flex-wrap">
             {DAILY_OPTIONS.map((mins) => (
               <button
                 key={mins}
                 type="button"
                 onClick={() => setDailyMinutes(mins)}
-                className={`px-4 py-2.5 rounded-xl border-2 font-body text-sm font-semibold transition-all ${
+                className={
                   dailyMinutes === mins
-                    ? "border-teal bg-teal text-white"
-                    : "border-ink/10 bg-white text-ink hover:border-teal/30"
-                }`}
+                    ? "px-4 py-2.5 rounded-xl border-2 border-teal bg-teal text-white font-body text-sm font-semibold"
+                    : "px-4 py-2.5 rounded-xl border-2 border-ink/10 bg-white text-ink font-body text-sm font-semibold"
+                }
               >
                 {mins} min
               </button>
             ))}
           </div>
-        </div>
+        </section>
 
-        {/* Target score */}
-        <div>
-          <p className="font-body text-xs font-semibold text-ink-3 uppercase tracking-wide mb-2">
-            Target Score
-          </p>
+        <section>
+          <p className="font-body text-sm font-semibold text-ink mb-2">Target score</p>
           <div className="flex gap-2 flex-wrap">
             {SCORE_OPTIONS.map((pct) => (
               <button
                 key={pct}
                 type="button"
                 onClick={() => setTargetScore(pct)}
-                className={`px-4 py-2.5 rounded-xl border-2 font-body text-sm font-semibold transition-all ${
+                className={
                   targetScore === pct
-                    ? "border-teal bg-teal text-white"
-                    : "border-ink/10 bg-white text-ink hover:border-teal/30"
-                }`}
+                    ? "px-4 py-2.5 rounded-xl border-2 border-teal bg-teal text-white font-body text-sm font-semibold"
+                    : "px-4 py-2.5 rounded-xl border-2 border-ink/10 bg-white text-ink font-body text-sm font-semibold"
+                }
               >
                 {pct}%+
               </button>
             ))}
           </div>
-        </div>
+        </section>
 
-        <Button
-          fullWidth
-          size="lg"
-          loading={updateGoal.isPending}
-          onClick={handleSave}
-        >
-          Save Goal
+        <Button fullWidth size="lg" loading={updateGoal.isPending} onClick={handleSave}>
+          {saveState === "success" ? "Saved" : "Save goal"}
         </Button>
       </div>
     </div>

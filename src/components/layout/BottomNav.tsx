@@ -28,9 +28,6 @@ export function BottomNav() {
               className="flex-1 flex flex-col items-center justify-center gap-0.5 relative"
               aria-label={label}
             >
-              {active && (
-                <span className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 rounded-full bg-teal" />
-              )}
               <Icon
                 name={icon}
                 size={22}
@@ -49,6 +46,17 @@ export function BottomNav() {
               >
                 {label}
               </span>
+              {active && (
+                <div
+                  style={{
+                    width: 4,
+                    height: 4,
+                    borderRadius: "50%",
+                    background: "#0D6E6E",
+                    marginTop: 1,
+                  }}
+                />
+              )}
             </NavLink>
           );
         })}

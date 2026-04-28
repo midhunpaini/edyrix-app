@@ -158,7 +158,7 @@ export function TestResultsPage() {
           <div className="mt-2 h-2 bg-ink/8 rounded-full overflow-hidden">
             <div
               className="h-full rounded-full bg-teal transition-all duration-700"
-              style={{ width: `${result.percentage}%` }}
+              style={{ width: `${Math.min(100, Math.max(0, result.percentage))}%` }}
             />
           </div>
         </div>

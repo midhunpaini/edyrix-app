@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate, Outlet } from "react-router-dom";
+import { useNavigate, Outlet, useLocation } from "react-router-dom";
 import { RazorpayCheckout } from "../payments/RazorpayCheckout";
 import { Modal } from "../ui/Modal";
 import { usePlans } from "../../hooks/useSubscription";
@@ -70,16 +70,23 @@ function PricingModal() {
 }
 
 export function AppLayout() {
+  const { pathname } = useLocation();
+  const hideBottomNav = /^\/app\/tests\/[^/]+(?:\/(live|submit|results|review))?$/.test(pathname);
+
   return (
     <div className="min-h-screen bg-ink/10 flex items-start justify-center sm:pt-4 sm:pb-4">
       <div className="relative w-full max-w-[430px] min-h-screen bg-bg sm:min-h-0 sm:rounded-[36px] sm:overflow-hidden sm:shadow-2xl sm:ring-1 sm:ring-black/10">
         <main
           className="overflow-y-auto"
-          style={{ paddingBottom: "calc(4.5rem + env(safe-area-inset-bottom))" }}
+          style={{
+            paddingBottom: hideBottomNav
+              ? "env(safe-area-inset-bottom)"
+              : "calc(4.5rem + env(safe-area-inset-bottom))",
+          }}
         >
           <Outlet />
         </main>
-        <BottomNav />
+        {!hideBottomNav && <BottomNav />}
         <PricingModal />
       </div>
     </div>

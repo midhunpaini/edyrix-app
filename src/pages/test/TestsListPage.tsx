@@ -1,64 +1,66 @@
+import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAvailableTests } from "../../hooks/useTests";
-import { Skeleton } from "../../components/ui/Skeleton";
 import { Icon } from "../../components/ui/Icon";
 import { Icons } from "../../lib/icons";
 import type { AvailableTest } from "../../types";
+import { PageHeader } from "../../components/layout/PageHeader";
+
+function cleanTestTitle(title: string) {
+  return title.replace(/\s*[-–—]\s*test$/i, "");
+}
+
+function scoreTone(score: number) {
+  if (score < 50) return "text-amber-dark";
+  return "text-forest";
+}
 
 function TestCard({ test, onClick }: { test: AvailableTest; onClick: () => void }) {
   const isLocked = !test.is_unlocked;
-  const lastAttempt = test.last_attempt;
+  const lastPct = Math.round(test.last_attempt?.percentage ?? 0);
 
   return (
     <button
+      type="button"
       onClick={onClick}
-      className={`w-full text-left bg-white rounded-2xl border border-ink/5 overflow-hidden shadow-sm active:scale-[0.98] transition-transform ${isLocked ? "opacity-70" : ""}`}
+      className="w-full rounded-2xl border border-ink/5 bg-white px-4 py-3 text-left active:scale-[0.99] transition-transform"
     >
-      <div className="flex items-start gap-3 p-4">
+      <div className="flex items-start gap-3">
         <div className="w-10 h-10 rounded-xl bg-teal/10 flex items-center justify-center flex-shrink-0">
-          {isLocked ? (
-            <Icon name={Icons.lock} size={18} className="text-teal" aria-hidden />
-          ) : lastAttempt ? (
-            <Icon name={Icons.complete} size={18} className="text-forest" aria-hidden />
-          ) : (
-            <Icon name={Icons.quiz} size={18} className="text-teal" aria-hidden />
-          )}
+          <Icon
+            name={isLocked ? Icons.lock : Icons.tests}
+            size={18}
+            className={isLocked ? "text-teal" : "text-teal"}
+            aria-hidden
+          />
         </div>
 
         <div className="flex-1 min-w-0">
-          <p className="font-body font-semibold text-ink text-sm truncate">{test.title}</p>
-          <p className="font-body text-xs text-ink-3 mt-0.5 truncate">
-            {test.subject_name} · Chapter {test.chapter_number}
+          <p
+            className={`font-body text-sm leading-5 ${isLocked ? "text-ink/60" : "text-ink font-semibold"}`}
+            style={{
+              display: "-webkit-box",
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: "vertical",
+              overflow: "hidden",
+            }}
+          >
+            {cleanTestTitle(test.title)}
           </p>
-
-          <div className="flex items-center gap-3 mt-2">
-            <span className="flex items-center gap-1 font-body text-[11px] text-ink-3">
-              <Icon name={Icons.timer} size={11} aria-hidden />
-              {test.duration_minutes} min
-            </span>
-            <span className="font-body text-[11px] text-ink-3">
-              {test.question_count} Q
-            </span>
-            {lastAttempt && (
-              <span className={`font-body text-[11px] font-semibold ${lastAttempt.percentage >= 60 ? "text-forest" : "text-rose"}`}>
-                Last: {Math.round(lastAttempt.percentage)}%
-              </span>
-            )}
-          </div>
+          <p className={`font-body text-xs mt-1 ${isLocked ? "text-ink-3/70" : "text-ink-3"}`}>
+            {test.question_count} questions · {test.duration_minutes} min
+          </p>
+          {test.last_attempt && lastPct > 0 ? (
+            <p className={`font-body text-xs font-semibold mt-1 ${scoreTone(lastPct)}`}>
+              Last: {lastPct}%
+            </p>
+          ) : null}
         </div>
 
-        <Icon name={Icons.forward} size={16} className="text-ink-3 flex-shrink-0 mt-1" aria-hidden />
+        {!isLocked ? (
+          <Icon name={Icons.forward} size={16} className="text-ink-3 mt-1" aria-hidden />
+        ) : null}
       </div>
-
-      {isLocked && (
-        <div className="bg-amber-pale px-4 py-2 border-t border-amber/20">
-          <p className="font-body text-[11px] text-amber-dark font-semibold">
-            {test.unlock_reason === "complete_lesson"
-              ? "Complete the lesson to unlock"
-              : "Subscribe to unlock"}
-          </p>
-        </div>
-      )}
     </button>
   );
 }
@@ -67,73 +69,91 @@ export function TestsListPage() {
   const navigate = useNavigate();
   const { data: tests, isLoading } = useAvailableTests();
 
-  const available = tests?.filter((t) => t.is_unlocked) ?? [];
-  const locked = tests?.filter((t) => !t.is_unlocked) ?? [];
+  const groups = useMemo(() => {
+    const grouped = new Map<
+      string,
+      {
+        key: string;
+        heading: string;
+        tests: AvailableTest[];
+      }
+    >();
+
+    for (const item of tests ?? []) {
+      const key = `${item.subject_id}-${item.chapter_id}`;
+      if (!grouped.has(key)) {
+        grouped.set(key, {
+          key,
+          heading: `${item.subject_name} · Chapter ${item.chapter_number}`,
+          tests: [],
+        });
+      }
+      grouped.get(key)!.tests.push(item);
+    }
+
+    return Array.from(grouped.values());
+  }, [tests]);
 
   return (
     <div className="pb-4">
-      <div className="bg-gradient-to-br from-teal to-teal-dark px-4 pt-12 pb-6">
-        <h1 className="font-display font-bold text-2xl text-white">Tests</h1>
-        <p className="text-white/70 text-sm font-body mt-0.5">Chapter tests & practice</p>
-      </div>
+      <PageHeader
+        title="Tests"
+        subtitle="Chapter tests and practice"
+        onBack={() => navigate("/app/dashboard")}
+        backLabel="Home"
+      />
 
-      <div className="px-4 py-4 space-y-4">
+      <div className="px-4 py-4">
         {isLoading ? (
           <div className="space-y-3">
-            {[0, 1, 2].map((i) => (
-              <Skeleton key={i} className="h-24 rounded-2xl" />
+            {[0, 1, 2].map((item) => (
+              <div key={item} className="skeleton h-24 rounded-2xl" />
             ))}
           </div>
-        ) : tests?.length === 0 ? (
+        ) : !tests || tests.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center">
             <Icon name={Icons.quiz} size={40} className="text-ink/20 mb-3 block" aria-hidden />
             <p className="font-body font-semibold text-ink-3 text-sm">No tests yet</p>
             <p className="font-body text-xs text-ink-3 mt-1">Complete lessons to unlock chapter tests</p>
           </div>
         ) : (
-          <>
-            {available.length > 0 && (
-              <div>
-                <p className="font-body text-xs font-semibold text-ink-3 uppercase tracking-wide mb-3">
-                  Ready to take
-                </p>
-                <div className="space-y-3">
-                  {available.map((test) => (
-                    <TestCard
-                      key={test.id}
-                      test={test}
-                      onClick={() =>
-                        navigate(`/app/tests/${test.id}`, {
-                          state: { lastAttempt: test.last_attempt },
-                        })
-                      }
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
+          <div className="space-y-5">
+            {groups.map((group) => {
+              const ready = group.tests.filter((item) => item.is_unlocked);
+              const locked = group.tests.filter((item) => !item.is_unlocked);
+              return (
+                <section key={group.key} className="space-y-2">
+                  <p className="font-body text-xs uppercase tracking-wide font-semibold text-ink-3">
+                    {group.heading}
+                  </p>
 
-            {locked.length > 0 && (
-              <div>
-                <p className="font-body text-xs font-semibold text-ink-3 uppercase tracking-wide mb-3">
-                  Locked
-                </p>
-                <div className="space-y-3">
-                  {locked.map((test) => (
+                  {ready.map((test) => (
                     <TestCard
                       key={test.id}
                       test={test}
-                      onClick={() =>
-                        navigate(`/app/tests/${test.id}`, {
-                          state: { lastAttempt: test.last_attempt },
-                        })
-                      }
+                      onClick={() => navigate(`/app/tests/${test.id}`)}
                     />
                   ))}
-                </div>
-              </div>
-            )}
-          </>
+
+                  {locked.length > 0 ? (
+                    <>
+                      <div className="rounded-xl bg-bg border border-ink/8 px-3 py-2">
+                        <p className="font-body text-xs text-ink-3">Complete lesson to unlock</p>
+                      </div>
+                      {locked.map((test) => (
+                        <div key={test.id} className="opacity-60">
+                          <TestCard
+                            test={test}
+                            onClick={() => navigate(`/app/tests/${test.id}`)}
+                          />
+                        </div>
+                      ))}
+                    </>
+                  ) : null}
+                </section>
+              );
+            })}
+          </div>
         )}
       </div>
     </div>

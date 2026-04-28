@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef } from "react";
 import YouTube from "react-youtube";
+import { clsx } from "clsx";
 import { toast } from "sonner";
 import { useWatchProgress } from "../../hooks/useProgress";
 
@@ -18,11 +19,19 @@ interface VideoPlayerProps {
   lessonId: string;
   youtubeVideoId: string;
   resumeAtSeconds?: number;
+  onReady?: () => void;
+  className?: string;
 }
 
 const PLAYER_STATE_PLAYING = 1;
 
-export function VideoPlayer({ lessonId, youtubeVideoId, resumeAtSeconds = 0 }: VideoPlayerProps) {
+export function VideoPlayer({
+  lessonId,
+  youtubeVideoId,
+  resumeAtSeconds = 0,
+  onReady,
+  className,
+}: VideoPlayerProps) {
   const playerRef = useRef<YTPlayer | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const completedRef = useRef(false);
@@ -55,7 +64,7 @@ export function VideoPlayer({ lessonId, youtubeVideoId, resumeAtSeconds = 0 }: V
       current_time_seconds: currentTimeSeconds,
     });
 
-    if (percentage >= 90 && !completedRef.current) {
+    if (percentage >= 80 && !completedRef.current) {
       completedRef.current = true;
       stopHeartbeat();
       toast.success("Lesson complete!");
@@ -85,6 +94,7 @@ export function VideoPlayer({ lessonId, youtubeVideoId, resumeAtSeconds = 0 }: V
     if (resumeAtSeconds > 0) {
       e.target.seekTo(resumeAtSeconds, true);
     }
+    onReady?.();
   };
 
   const handleStateChange = (e: YTEvent) => {
@@ -111,7 +121,7 @@ export function VideoPlayer({ lessonId, youtubeVideoId, resumeAtSeconds = 0 }: V
   };
 
   return (
-    <div className="w-full aspect-video bg-black overflow-hidden">
+    <div className={clsx("w-full aspect-video bg-black overflow-hidden", className)}>
       <YouTube
         videoId={youtubeVideoId}
         opts={opts}

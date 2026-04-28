@@ -5,10 +5,10 @@ import { useSubjects } from "../hooks/useContent";
 import { useProgressSummary } from "../hooks/useProgress";
 import { useSubscription } from "../hooks/useSubscription";
 import { PremiumLock } from "../components/content/PremiumLock";
-import { ProgressBar } from "../components/ui/ProgressBar";
-import { Skeleton } from "../components/ui/Skeleton";
 import { Icon } from "../components/ui/Icon";
 import { Icons } from "../lib/icons";
+import { getSubjectMeta } from "../lib/subjects";
+import { PageHeader } from "../components/layout/PageHeader";
 
 export function SubjectListPage() {
   const navigate = useNavigate();
@@ -18,7 +18,6 @@ export function SubjectListPage() {
   const { data: subjects, isLoading } = useSubjects(classNum);
   const { data: progress } = useProgressSummary();
   const { data: subscription } = useSubscription();
-
   const [filter, setFilter] = useState<string>("all");
 
   const hasAnyAccess = subscription?.free_trial.active || subscription?.subscription?.status === "active";
@@ -27,65 +26,55 @@ export function SubjectListPage() {
 
   const filters = [
     { key: "all", label: "All" },
-    ...(subjects ?? []).map((s) => ({ key: s.slug, label: s.name })),
+    ...(subjects ?? []).map((subject) => ({ key: subject.slug, label: subject.name })),
   ];
 
-  const filtered =
-    filter === "all"
-      ? (subjects ?? [])
-      : (subjects ?? []).filter((s) => s.slug === filter);
+  const filtered = filter === "all" ? subjects ?? [] : (subjects ?? []).filter((subject) => subject.slug === filter);
 
   return (
-    <div>
-      {/* Header */}
-      <div className="bg-gradient-to-br from-teal to-teal-dark px-4 pt-12 pb-6">
-        <h1 className="font-display font-bold text-2xl text-white">Subjects</h1>
-        <p className="text-white/70 text-sm font-body mt-0.5">
-          {classNum ? `Class ${classNum}` : "All Classes"}
-        </p>
-      </div>
+    <div className="pb-5">
+      <PageHeader
+        title="Subjects"
+        subtitle={classNum ? `Class ${classNum}` : "All classes"}
+        onBack={() => navigate("/app/dashboard")}
+        backLabel="Home"
+      />
 
-      {/* Trial CTA */}
       {showTrialBanner && (
         <button
           type="button"
           onClick={() => navigate("/app/pricing")}
-          className="mx-4 mt-3 w-[calc(100%-2rem)] flex items-center gap-3 bg-gradient-to-r from-amber/15 to-amber/5 border border-amber/30 rounded-2xl px-4 py-3 text-left active:scale-[0.98] transition-transform"
+          className="mx-4 mt-3 w-[calc(100%-2rem)] rounded-2xl bg-amber-pale border border-amber/30 px-4 py-3 text-left active:scale-[0.99] transition-transform"
         >
-          <Icon name={Icons.sparkle} size={22} className="text-amber flex-shrink-0" aria-hidden />
-          <div className="flex-1">
-            <p className="font-body font-bold text-sm text-ink">Unlock all subjects free for 7 days</p>
-            <p className="font-body text-xs text-ink-3 mt-0.5">No payment needed to start</p>
-          </div>
-          <Icon name={Icons.forward} size={16} className="text-amber" aria-hidden />
+          <p className="font-body text-sm font-semibold text-ink">Unlock all subjects free for 7 days</p>
+          <p className="font-body text-xs text-ink-3 mt-0.5">No payment needed to start</p>
         </button>
       )}
 
-      {/* Filter chips */}
       <div className="px-4 py-3 overflow-x-auto">
         <div className="flex gap-2">
-          {filters.map((f) => (
+          {filters.map((item) => (
             <button
-              key={f.key}
-              onClick={() => setFilter(f.key)}
-              className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-body font-semibold transition-colors ${
-                filter === f.key
-                  ? "bg-teal text-white"
-                  : "bg-white text-ink-3 border border-ink/10"
-              }`}
+              key={item.key}
+              type="button"
+              onClick={() => setFilter(item.key)}
+              className={
+                filter === item.key
+                  ? "rounded-full px-3 py-2 text-xs font-body font-semibold bg-teal text-white"
+                  : "rounded-full px-3 py-2 text-xs font-body font-semibold bg-white border border-ink/10 text-ink-3"
+              }
             >
-              {f.label}
+              {item.label}
             </button>
           ))}
         </div>
       </div>
 
-      {/* Grid */}
-      <div className="px-4 pb-4">
+      <div className="px-4">
         {isLoading ? (
-          <div className="grid grid-cols-2 gap-3">
-            {[0, 1, 2, 3].map((i) => (
-              <Skeleton key={i} className="h-44 rounded-2xl" />
+          <div className="space-y-3">
+            {[0, 1, 2, 3].map((item) => (
+              <div key={item} className="skeleton h-28 rounded-2xl" />
             ))}
           </div>
         ) : filtered.length === 0 ? (
@@ -94,44 +83,42 @@ export function SubjectListPage() {
             <p className="font-body font-semibold text-ink-3">No subjects found</p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-3">
+          <div className="flex flex-col gap-3">
             {filtered.map((subject) => {
-              const subjectProgress = progress?.subjects.find(
-                (p) => p.subject_id === subject.id
-              );
-              const pct = subjectProgress?.percentage ?? 0;
+              const meta = getSubjectMeta(subject.slug);
+              const subjectProgress = progress?.subjects.find((entry) => entry.subject_id === subject.id);
+              const pct = Math.round(subjectProgress?.percentage ?? 0);
 
-              const card = (
+              const content = (
                 <button
                   key={subject.id}
-                  onClick={() =>
-                    subject.has_access
-                      ? navigate(`/app/subjects/${subject.id}`)
-                      : undefined
-                  }
-                  className="bg-white rounded-2xl border border-ink/5 overflow-hidden w-full text-left active:scale-[0.97] transition-transform"
+                  type="button"
+                  onClick={() => (subject.has_access ? navigate(`/app/subjects/${subject.id}`) : undefined)}
+                  className="w-full rounded-2xl bg-white border border-ink/5 p-3 text-left flex items-center gap-3 active:scale-[0.99] transition-transform"
                 >
                   <div
-                    className="h-24 flex items-center justify-center text-4xl"
-                    style={{ backgroundColor: subject.color + "15" }}
+                    className="w-20 h-20 rounded-xl flex items-center justify-center text-4xl flex-shrink-0"
+                    style={{ backgroundColor: meta.paleColor }}
                   >
-                    {subject.icon}
+                    {meta.emoji}
                   </div>
-                  <div className="p-3">
-                    <p className="font-display font-bold text-ink text-sm leading-tight">
-                      {subject.name}
-                    </p>
-                    <p className="text-ink-3 text-[11px] font-body mt-0.5 mb-2">
-                      {subject.name_ml}
-                    </p>
-                    <div className="flex items-center justify-between mb-1.5">
-                      <span className="text-[11px] text-ink-3 font-body">
-                        {subject.chapter_count} chapters
-                      </span>
-                      <span className="text-[11px] text-ink-3 font-body">{Math.round(pct)}%</span>
-                    </div>
-                    <ProgressBar value={pct} />
+
+                  <div className="flex-1 min-w-0">
+                    <p className="font-display font-bold text-ink text-base truncate">{subject.name}</p>
+                    <p className="font-body text-xs text-ink-3 mt-0.5">{subject.chapter_count} chapters</p>
+                    {pct > 0 ? (
+                      <>
+                        <div className="w-full h-1 bg-ink/10 rounded-full mt-3 overflow-hidden">
+                          <div className="h-full rounded-full bg-teal" style={{ width: `${pct}%` }} />
+                        </div>
+                        <p className="font-body text-xs text-ink-3 mt-1">{pct}% complete</p>
+                      </>
+                    ) : (
+                      <p className="font-body text-xs text-teal font-semibold mt-3">Start learning →</p>
+                    )}
                   </div>
+
+                  <Icon name={Icons.forward} size={18} className="text-ink-3" aria-hidden />
                 </button>
               );
 
@@ -142,12 +129,12 @@ export function SubjectListPage() {
                     subjectId={subject.id}
                     classNumber={classNum ?? 10}
                   >
-                    {card}
+                    {content}
                   </PremiumLock>
                 );
               }
 
-              return card;
+              return content;
             })}
           </div>
         )}

@@ -55,7 +55,6 @@ export default function App() {
           }
         />
 
-        {/* App shell — pages with bottom nav */}
         <Route
           path="/app"
           element={
@@ -71,53 +70,17 @@ export default function App() {
           <Route path="chapters/:id" element={<LessonListPage />} />
           <Route path="lessons/:id" element={<LessonPlayerPage />} />
           <Route path="tests" element={<TestsListPage />} />
+          <Route path="tests/:id" element={<PreTestPage />} />
+          <Route path="tests/:id/live" element={<LiveTestPage />} />
+          <Route path="tests/:id/submit" element={<SubmitConfirmPage />} />
+          <Route path="tests/:id/results" element={<TestResultsPage />} />
+          <Route path="tests/:id/review" element={<AnswerReviewPage />} />
           <Route path="pricing" element={<PricingPage />} />
           <Route path="profile" element={<ProfilePage />} />
           <Route path="doubts" element={<DoubtsPage />} />
           <Route path="goal-setup" element={<GoalSetupPage />} />
         </Route>
 
-        {/* Full-screen test flow — no bottom nav */}
-        <Route
-          path="/app/tests/:id"
-          element={
-            <AuthGuard>
-              <PreTestPage />
-            </AuthGuard>
-          }
-        />
-        <Route
-          path="/app/tests/:id/live"
-          element={
-            <AuthGuard>
-              <LiveTestPage />
-            </AuthGuard>
-          }
-        />
-        <Route
-          path="/app/tests/:id/submit"
-          element={
-            <AuthGuard>
-              <SubmitConfirmPage />
-            </AuthGuard>
-          }
-        />
-        <Route
-          path="/app/tests/:id/results"
-          element={
-            <AuthGuard>
-              <TestResultsPage />
-            </AuthGuard>
-          }
-        />
-        <Route
-          path="/app/tests/:id/review"
-          element={
-            <AuthGuard>
-              <AnswerReviewPage />
-            </AuthGuard>
-          }
-        />
         <Route
           path="/app/chapters/:id/practice"
           element={

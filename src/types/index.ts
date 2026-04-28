@@ -31,6 +31,11 @@ export interface ChapterSummary {
   chapter_number: number;
   title: string;
   title_ml: string;
+  lessons_total: number;
+  lessons_completed: number;
+  progress_pct: number;
+  has_started: boolean;
+  estimated_minutes: number;
   lesson_count: number;
   has_test: boolean;
   watch_percentage: number;
@@ -43,6 +48,7 @@ export interface Chapter {
   title: string;
   lessons: LessonSummary[];
   has_notes: boolean;
+  has_test: boolean;
   test_id: string | null;
 }
 
@@ -50,11 +56,15 @@ export interface LessonSummary {
   id: string;
   title: string;
   duration_seconds: number | null;
+  lesson_number: number;
   is_free: boolean;
+  is_unlocked: boolean;
   is_locked: boolean;
   thumbnail_url: string | null;
   watch_percentage: number;
   is_completed: boolean;
+  can_take_test: boolean;
+  test_last_score: number | null;
   test: LessonTestSummary | null;
 }
 
@@ -138,6 +148,7 @@ export interface LastAttempt {
   total_marks: number | null;
   percentage: number;
   completed_at: string;
+  attempt_number: number;
 }
 
 export interface AvailableTest {
@@ -203,6 +214,12 @@ export interface WatchProgress {
 }
 
 export interface SubjectDetail extends Subject {
+  total_lessons: number;
+  completed_lessons: number;
+  total_chapters: number;
+  completed_chapters: number;
+  subject_progress_pct: number;
+  estimated_hours: number;
   chapters: ChapterSummary[];
 }
 

@@ -1,183 +1,182 @@
 import { useNavigate, useParams, useLocation } from "react-router-dom";
-import { toast } from "sonner";
 import { useChapter } from "../hooks/useContent";
-import { Skeleton } from "../components/ui/Skeleton";
+import { useChapterTest } from "../hooks/useTests";
 import { Icon } from "../components/ui/Icon";
 import { Icons } from "../lib/icons";
-import { useUIStore } from "../store/uiStore";
+import { PageHeader } from "../components/layout/PageHeader";
 
-function formatDuration(seconds: number | null): string {
-  if (!seconds) return "";
-  const m = Math.floor(seconds / 60);
-  const s = seconds % 60;
-  return `${m}:${String(s).padStart(2, "0")}`;
+function durationLabel(seconds: number | null) {
+  if (!seconds) return "0 min";
+  return `${Math.max(1, Math.round(seconds / 60))} min`;
 }
 
 export function LessonListPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const location = useLocation();
-  const state = location.state as { subjectName?: string } | null;
-  const openPricing = useUIStore((s) => s.openPricing);
-
+  const state = location.state as { subjectName?: string; subjectSlug?: string } | null;
   const { data: chapter, isLoading } = useChapter(id);
+  const { data: chapterTest } = useChapterTest(id);
 
-  function handleLessonClick(lessonId: string, isLocked: boolean) {
-    if (isLocked) {
-      toast.info("Subscribe to unlock this lesson");
-      openPricing(chapter?.subject_id);
+  const lessons = chapter?.lessons ?? [];
+  const completed = lessons.filter((lesson) => lesson.is_completed).length;
+  const total = lessons.length;
+  const chapterPct = total > 0 ? Math.round((completed / total) * 100) : 0;
+  const allComplete = total > 0 && completed === total;
+  const showTestCard = chapter?.has_test || !!chapter?.test_id || !!chapterTest;
+
+  function handleLessonClick(lessonId: string, isUnlocked: boolean) {
+    if (!isUnlocked) {
+      navigate("/app/pricing");
       return;
     }
-
     navigate(`/app/lessons/${lessonId}`, {
-      state: { chapterId: id, chapterTitle: chapter?.title },
-    });
-  }
-
-  function handleTestClick(lesson: NonNullable<typeof chapter>["lessons"][number]) {
-    if (lesson.is_locked) {
-      toast.info("Subscribe to unlock this lesson");
-      openPricing(chapter?.subject_id);
-      return;
-    }
-    if (!lesson.test) return;
-    if (!lesson.test.is_unlocked) {
-      toast.info("Complete this lesson to unlock its test");
-      return;
-    }
-    navigate(`/app/tests/${lesson.test.id}`, {
       state: {
         chapterId: id,
         chapterTitle: chapter?.title,
-        lessonId: lesson.id,
-        lessonTitle: lesson.title,
+        subjectName: state?.subjectName,
+        subjectSlug: state?.subjectSlug,
+      },
+    });
+  }
+
+  function handleChapterTestClick() {
+    if (!chapterTest || !allComplete) return;
+    navigate(`/app/tests/${chapterTest.id}`, {
+      state: {
+        chapterId: id,
+        chapterTitle: chapter?.title,
+        lastAttempt: chapterTest.last_attempt,
       },
     });
   }
 
   return (
-    <div>
-      {/* Header */}
-      <div className="bg-gradient-to-br from-teal to-teal-dark px-4 pt-12 pb-6">
-        <button
-          onClick={() => navigate(-1)}
-          className="flex items-center gap-1 text-white/80 text-sm font-body mb-4 hover:text-white transition-colors"
-        >
-          <Icon name={Icons.back} size={16} aria-hidden />
-          {state?.subjectName ?? "Chapters"}
-        </button>
-        {isLoading ? (
-          <div className="h-6 w-40 bg-white/20 rounded animate-pulse" />
-        ) : (
-          <h1 className="font-display font-bold text-xl text-white leading-tight">
-            {chapter?.title}
-          </h1>
-        )}
+    <div className="pb-4">
+      <PageHeader
+        title={chapter?.title ?? "Chapter"}
+        subtitle={state?.subjectName ?? "Lessons"}
+        onBack={() => navigate(-1)}
+        backLabel={state?.subjectName ?? "Chapters"}
+      />
+
+      <div className="px-5 py-3 border-b border-ink/8 bg-white">
+        <div className="flex items-center justify-between gap-3 mb-1">
+          <p className="font-body text-xs text-ink-3">
+            {completed} of {Math.max(total, 0)} lessons complete
+          </p>
+          {showTestCard && allComplete ? (
+            <button type="button" onClick={handleChapterTestClick} className="touch text-xs font-body font-semibold text-teal">
+              Test available →
+            </button>
+          ) : null}
+        </div>
+        <div className="w-full h-[3px] bg-ink/10 rounded-full overflow-hidden">
+          <div className="h-full bg-teal rounded-full" style={{ width: `${chapterPct}%` }} />
+        </div>
       </div>
 
-      {/* Lesson list */}
       <div className="px-4 py-4 space-y-2">
         {isLoading ? (
           <>
-            {[0, 1, 2, 3].map((i) => (
-              <Skeleton key={i} className="h-20 rounded-2xl" />
+            {[0, 1, 2, 3].map((item) => (
+              <div key={item} className="skeleton h-16 rounded-xl" />
             ))}
           </>
+        ) : lessons.length === 0 ? (
+          <p className="text-center text-ink-3 font-body text-sm py-12">No lessons in this chapter yet</p>
         ) : (
-          (chapter?.lessons ?? []).map((lesson, index) => (
-            <div
-              key={lesson.id}
-              className="w-full bg-white rounded-2xl border border-ink/5 p-4 shadow-sm"
-            >
+          lessons.map((lesson) => {
+            const inProgress = lesson.watch_percentage > 0 && lesson.watch_percentage < 100;
+            const complete = lesson.is_completed;
+            const locked = !lesson.is_unlocked;
+            return (
               <button
-                onClick={() => handleLessonClick(lesson.id, lesson.is_locked)}
-                className="w-full flex items-center gap-3 text-left active:scale-[0.99] transition-transform"
+                key={lesson.id}
+                type="button"
+                onClick={() => handleLessonClick(lesson.id, lesson.is_unlocked)}
+                className="w-full bg-white rounded-2xl border border-ink/5 p-3 text-left active:scale-[0.99] transition-transform"
               >
-                {/* Thumbnail or index */}
-                <div className="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0 bg-ink/5 flex items-center justify-center">
-                  {lesson.thumbnail_url ? (
-                    <img
-                      src={lesson.thumbnail_url}
-                      className="w-full h-full object-cover"
-                      alt=""
-                    />
-                  ) : (
-                    <span className="font-display font-bold text-ink-3 text-lg">
-                      {index + 1}
-                    </span>
-                  )}
-                </div>
-
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-start justify-between gap-2">
-                    <p className="font-body font-semibold text-ink text-sm leading-tight flex-1">
-                      {lesson.title}
-                    </p>
-                    {lesson.is_completed ? (
-                      <Icon name={Icons.complete} size={16} className="text-forest flex-shrink-0 mt-0.5" aria-hidden />
-                    ) : lesson.is_locked ? (
-                      <Icon name={Icons.lock} size={16} className="text-ink-3 flex-shrink-0 mt-0.5" aria-hidden />
-                    ) : null}
+                <div className="flex items-start gap-3">
+                  <div
+                    className="w-10 h-10 rounded-xl border flex items-center justify-center flex-shrink-0"
+                    style={
+                      complete
+                        ? { backgroundColor: "#0D6E6E", borderColor: "#0D6E6E", color: "white" }
+                        : inProgress
+                        ? { backgroundColor: "#E1F5EE", borderColor: "#0D6E6E66", color: "#0D6E6E" }
+                        : { backgroundColor: "white", borderColor: "#DCD8CF", color: "#7C7C9A" }
+                    }
+                  >
+                    {complete ? <Icon name={Icons.check} size={16} aria-hidden /> : <span className="font-display font-bold text-sm">{lesson.lesson_number}</span>}
                   </div>
 
-                  <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                    {lesson.duration_seconds && (
-                      <span className="flex items-center gap-1 text-[11px] text-ink-3 font-body">
-                        <Icon name={Icons.clock} size={11} aria-hidden />
-                        {formatDuration(lesson.duration_seconds)}
-                      </span>
-                    )}
-                    {lesson.is_free && (
-                      <span className="text-[10px] font-body font-bold text-forest bg-forest/10 px-1.5 py-0.5 rounded-full">
-                        FREE
-                      </span>
-                    )}
-                    {lesson.is_locked && (
-                      <span className="text-[10px] font-body font-bold text-ink-3 bg-ink/5 px-1.5 py-0.5 rounded-full">
-                        PREMIUM
-                      </span>
-                    )}
-                    {lesson.watch_percentage > 0 && !lesson.is_completed && (
-                      <span className="text-[11px] text-ink-3 font-body">
-                        {lesson.watch_percentage}% watched
-                      </span>
-                    )}
+                  <div className={`flex-1 min-w-0 ${locked ? "opacity-50" : ""}`}>
+                    <div className="flex items-center gap-1">
+                      <p className="font-body font-semibold text-sm text-ink truncate">{lesson.title}</p>
+                      {locked ? <Icon name={Icons.lock} size={12} className="text-ink-3" aria-hidden /> : null}
+                    </div>
+                    <div className="flex items-center gap-2 mt-1 flex-wrap">
+                      {lesson.is_free ? (
+                        <span className="text-[10px] font-body font-bold text-[#27500A] bg-[#EAF3DE] rounded-full px-1.5 py-0.5">
+                          FREE
+                        </span>
+                      ) : null}
+                      <span className="text-xs font-body text-ink-3">{durationLabel(lesson.duration_seconds)}</span>
+                    </div>
+
+                    {inProgress ? (
+                      <div className="mt-1">
+                        <div className="w-full h-[2px] bg-ink/10 rounded-full overflow-hidden">
+                          <div className="h-full bg-amber rounded-full" style={{ width: `${Math.min(100, lesson.watch_percentage)}%` }} />
+                        </div>
+                        <p className="font-body text-[10px] text-ink-3 text-right mt-0.5">{lesson.watch_percentage}% watched</p>
+                      </div>
+                    ) : complete ? (
+                      <p className="font-body text-[10px] text-forest mt-1">✓ Complete</p>
+                    ) : null}
                   </div>
                 </div>
               </button>
-
-              {lesson.test && (
-                <button
-                  onClick={() => handleTestClick(lesson)}
-                  className={`mt-3 w-full h-10 rounded-xl border font-body font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors ${
-                    lesson.test.is_unlocked
-                      ? "border-amber/40 bg-amber/10 text-amber"
-                      : "border-ink/8 bg-bg text-ink-3"
-                  }`}
-                >
-                  {lesson.test.is_unlocked ? (
-                    <>
-                      <Icon name={Icons.quiz} size={14} aria-hidden />
-                      {lesson.test.last_attempt ? "Retake Test" : "Take Test"}
-                    </>
-                  ) : (
-                    <>
-                      <Icon name={Icons.lock} size={14} aria-hidden />
-                      Complete lesson to unlock test
-                    </>
-                  )}
-                </button>
-              )}
-            </div>
-          ))
-        )}
-
-        {!isLoading && chapter?.lessons.length === 0 && (
-          <p className="text-center text-ink-3 font-body text-sm py-12">
-            No lessons in this chapter yet
-          </p>
+            );
+          })
         )}
       </div>
+
+      {showTestCard ? (
+        <div className="mx-5 mt-1 mb-2 rounded-xl border-[1.5px] border-teal px-4 py-3 flex items-center justify-between gap-3 bg-white">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <Icon name="assignment" size={20} style={{ color: "#0D6E6E" }} aria-hidden />
+              <p className="font-body font-semibold text-sm text-teal">Chapter Test</p>
+            </div>
+            <p className="font-body text-xs text-ink-3 mt-1">
+              {chapterTest?.last_attempt ? `${Math.round(chapterTest.last_attempt.percentage)}% last attempt` : "Test your knowledge"}
+            </p>
+          </div>
+          {allComplete ? (
+            chapterTest?.last_attempt ? (
+              <button
+                type="button"
+                onClick={handleChapterTestClick}
+                className="h-10 px-3 rounded-lg border border-teal text-teal text-sm font-body font-semibold"
+              >
+                Retake →
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={handleChapterTestClick}
+                className="h-10 px-3 rounded-lg bg-teal text-white text-sm font-body font-semibold"
+              >
+                Take Test →
+              </button>
+            )
+          ) : (
+            <p className="font-body text-xs text-ink-3">🔒 Locked</p>
+          )}
+        </div>
+      ) : null}
     </div>
   );
 }
