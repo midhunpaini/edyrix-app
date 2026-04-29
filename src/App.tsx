@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Navigate, Route, Routes } from "react-router-dom";
 import { Toaster } from "sonner";
 import { AppLayout } from "./components/layout/AppLayout";
+import { ErrorBoundary } from "./components/ui/ErrorBoundary";
 import { ChapterListPage } from "./pages/ChapterListPage";
 import { DashboardPage } from "./pages/DashboardPage";
 import { DoubtsPage } from "./pages/DoubtsPage";
@@ -42,6 +43,7 @@ function RootRedirect() {
 
 export default function App() {
   return (
+    <ErrorBoundary>
     <QueryClientProvider client={qc}>
       <Routes>
         <Route path="/" element={<RootRedirect />} />
@@ -94,5 +96,6 @@ export default function App() {
       </Routes>
       <Toaster position="top-center" richColors />
     </QueryClientProvider>
+    </ErrorBoundary>
   );
 }

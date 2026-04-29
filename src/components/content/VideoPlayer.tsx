@@ -75,7 +75,7 @@ export function VideoPlayer({
     stopHeartbeat();
     intervalRef.current = setInterval(() => {
       sendHeartbeat();
-    }, 5000);
+    }, 15000);
   }, [sendHeartbeat, stopHeartbeat]);
 
   useEffect(() => {
